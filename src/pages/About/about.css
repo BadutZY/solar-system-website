@@ -1,0 +1,107 @@
+.vg-about-page {
+  min-height: 100vh;
+  padding: 8rem 6vw 6rem;
+}
+
+.vg-about-hero {
+  max-width: 720px;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-bottom: 4rem;
+}
+
+.vg-about-hero h1 {
+  font-size: clamp(2.2rem, 5vw, 3.6rem);
+}
+
+.vg-timeline-wrap {
+  position: relative;
+  max-width: 760px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  padding-left: 1.6rem;
+  border-left: 1px solid var(--line);
+  margin-bottom: 5rem;
+}
+
+.vg-timeline-node {
+  position: relative;
+  text-align: left;
+  background: transparent;
+  border: none;
+  color: var(--starlight);
+  padding: 1rem 1.2rem;
+  border-radius: 14px;
+  transition: background 0.3s var(--ease-out);
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.vg-timeline-node:hover,
+.vg-timeline-node.is-open {
+  background: #ffffff08;
+}
+
+.vg-timeline-marker {
+  position: absolute;
+  left: -1.85rem;
+  top: 1.3rem;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--dim);
+}
+
+.vg-timeline-node.is-open .vg-timeline-marker {
+  background: var(--plasma);
+  box-shadow: 0 0 10px var(--plasma);
+}
+
+.vg-timeline-era {
+  font-size: 0.72rem;
+  color: var(--plasma);
+  letter-spacing: 0.05em;
+}
+
+.vg-timeline-node h3 {
+  font-size: 1.15rem;
+}
+
+.vg-timeline-node p {
+  font-size: 0.9rem;
+  max-width: 560px;
+}
+
+.vg-about-context {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.2rem;
+}
+
+.vg-context-card {
+  padding: 1.6rem;
+  border-radius: 18px;
+  border: 1px solid var(--line);
+  background: var(--panel);
+}
+
+.vg-context-card h4 {
+  color: var(--solar);
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.6rem;
+}
+
+.vg-context-card p {
+  font-size: 0.88rem;
+}
+
+@media (max-width: 860px) {
+  .vg-about-context {
+    grid-template-columns: 1fr;
+  }
+}

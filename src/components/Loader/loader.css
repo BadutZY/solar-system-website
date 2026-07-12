@@ -1,0 +1,76 @@
+.vg-loader {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background: radial-gradient(ellipse at center, #0b1024 0%, #05070d 70%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2rem;
+}
+
+.vg-loader-orbit {
+  position: relative;
+  width: 120px;
+  height: 120px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.vg-loader-core {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--solar);
+  box-shadow: 0 0 40px 8px var(--solar-dim);
+}
+
+.vg-loader-ring {
+  position: absolute;
+  inset: 0;
+  border: 1px solid var(--line);
+  border-top-color: var(--plasma);
+  border-radius: 50%;
+  animation: vg-spin 2.4s linear infinite;
+}
+
+.vg-loader-ring--2 {
+  inset: 18px;
+  border-top-color: var(--nebula);
+  animation-duration: 1.6s;
+  animation-direction: reverse;
+}
+
+@keyframes vg-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.vg-loader-label {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  font-size: 0.75rem;
+  letter-spacing: 0.2em;
+  color: var(--dim);
+}
+
+.vg-loader-percent {
+  color: var(--plasma);
+}
+
+.vg-loader-bar {
+  width: 220px;
+  height: 2px;
+  background: var(--line);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.vg-loader-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--solar), var(--plasma));
+}

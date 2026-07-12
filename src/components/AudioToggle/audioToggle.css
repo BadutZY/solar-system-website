@@ -1,0 +1,46 @@
+.vg-audio-btn {
+  position: fixed;
+  bottom: 1.8rem;
+  right: 1.8rem;
+  z-index: 100;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  border: 1px solid var(--line);
+  background: #0b0f1acc;
+  backdrop-filter: blur(14px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  transition: border-color 0.3s var(--ease-out);
+}
+
+.vg-audio-btn:hover {
+  border-color: var(--plasma);
+}
+
+.vg-audio-bar {
+  width: 3px;
+  height: 10px;
+  background: var(--dim);
+  border-radius: 2px;
+  transition: background 0.3s;
+}
+
+.vg-audio-btn.is-on .vg-audio-bar {
+  background: var(--plasma);
+  animation: vg-audio-wave 0.9s ease-in-out infinite;
+}
+
+.vg-audio-btn.is-on .vg-audio-bar:nth-child(2) {
+  animation-delay: 0.15s;
+}
+.vg-audio-btn.is-on .vg-audio-bar:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
+@keyframes vg-audio-wave {
+  0%, 100% { height: 6px; }
+  50% { height: 16px; }
+}

@@ -1,0 +1,221 @@
+.vg-home {
+  position: relative;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.vg-home-canvas {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+}
+
+.vg-home-canvas canvas {
+  display: block;
+}
+
+.vg-home-scroll {
+  position: relative;
+  z-index: 1;
+  height: 100vh;
+  overflow-y: scroll;
+  overflow-x: hidden;
+  scroll-snap-type: y mandatory;
+  scroll-behavior: smooth;
+}
+
+.vg-hero,
+.vg-planet-section {
+  height: 100vh;
+  width: 100%;
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
+  position: relative;
+}
+
+/* ---------- Hero ---------- */
+.vg-hero {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 1.2rem;
+  max-width: 720px;
+  padding: 0 8vw;
+}
+
+.vg-hero-title {
+  font-size: clamp(2.8rem, 7vw, 5.6rem);
+  line-height: 1.02;
+  background: linear-gradient(135deg, #ffffff 30%, #b9c2dd 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.vg-hero-desc {
+  max-width: 480px;
+  font-size: 1.05rem;
+}
+
+/* ---------- Planet panel: fixed anchor, never centered ----------
+   Every section anchors its panel to the SAME top offset and caps its
+   width to roughly 40% of the viewport — so position is consistent
+   section-to-section, and the other ~60% always stays open for the
+   planet the shared camera is framing there. */
+.vg-planet-panel {
+  position: absolute;
+  top: 12vh;
+  width: min(460px, 42vw);
+  max-height: 74vh;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 1.8rem 2rem;
+  border-radius: 22px;
+  border: 1px solid var(--line);
+  background: var(--panel);
+  backdrop-filter: blur(22px);
+  -webkit-backdrop-filter: blur(22px);
+  box-shadow: 0 30px 80px #00000055;
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+
+.vg-planet-section.side-left .vg-planet-panel {
+  left: 6vw;
+}
+
+.vg-planet-section.side-right .vg-planet-panel {
+  right: 6vw;
+}
+
+.vg-planet-index {
+  color: var(--dim);
+  font-size: 0.7rem;
+  letter-spacing: 0.1em;
+}
+
+.vg-planet-name {
+  font-size: clamp(1.8rem, 3.2vw, 2.5rem);
+}
+
+.vg-planet-desc {
+  font-size: 0.92rem;
+}
+
+.vg-telemetry {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.35rem;
+  padding: 0.85rem;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: #00000033;
+}
+
+.vg-telemetry-cell {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  font-size: 0.75rem;
+  padding: 0.22rem 0;
+  border-bottom: 1px dashed #ffffff14;
+}
+
+.vg-telemetry-cell:last-child {
+  border-bottom: none;
+}
+
+.vg-telemetry-label {
+  color: var(--dim);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.vg-telemetry-value {
+  color: var(--starlight);
+  text-align: right;
+}
+
+.vg-planet-more-toggle {
+  cursor: pointer;
+  background: none;
+  border: none;
+  padding: 0;
+  color: var(--plasma);
+  font-size: 0.76rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  transition: color 0.2s var(--ease-out);
+}
+
+.vg-planet-more-toggle:hover {
+  color: var(--starlight);
+}
+
+.vg-planet-more-body {
+  font-size: 0.83rem;
+  color: var(--dim);
+  line-height: 1.6;
+}
+
+.vg-planet-more-inner {
+  padding-top: 0.7rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.vg-planet-more-body strong {
+  color: var(--starlight);
+}
+
+.vg-planet-more-body ul {
+  margin: 0.2rem 0 0;
+  padding-left: 1.1rem;
+}
+
+/* ---------- Side progress dots ---------- */
+.vg-home-progress {
+  position: fixed;
+  right: 1.6rem;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 50;
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+}
+
+.vg-home-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  border: none;
+  background: var(--line);
+  transition: background 0.3s, transform 0.3s;
+}
+
+.vg-home-dot.is-active {
+  background: var(--plasma);
+  transform: scale(1.4);
+  box-shadow: 0 0 10px var(--plasma);
+}
+
+@media (max-width: 860px) {
+  .vg-planet-panel {
+    width: 90vw;
+    max-height: 62vh;
+    top: auto;
+    bottom: 2vh;
+  }
+  .vg-planet-section.side-left .vg-planet-panel,
+  .vg-planet-section.side-right .vg-planet-panel {
+    left: 5vw;
+    right: 5vw;
+  }
+  .vg-home-progress {
+    display: none;
+  }
+}
