@@ -64,10 +64,23 @@
   padding: 0;
 }
 
+.vg-tile-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.5s var(--ease-out);
+}
+
+.vg-tile:hover .vg-tile-img {
+  transform: scale(1.06);
+}
+
 .vg-tile-glow {
   position: absolute;
   inset: 0;
-  background: radial-gradient(circle at 30% 20%, color-mix(in srgb, var(--accent) 55%, transparent), transparent 60%);
+  background: linear-gradient(180deg, transparent 40%, color-mix(in srgb, var(--accent) 35%, #05070d) 100%);
   transition: opacity 0.4s var(--ease-out);
 }
 
@@ -117,7 +130,9 @@
 }
 
 .vg-lightbox-visual {
-  background: linear-gradient(150deg, color-mix(in srgb, var(--accent) 55%, #05070d), #05070d 85%);
+  background-color: color-mix(in srgb, var(--accent) 55%, #05070d);
+  background-size: cover;
+  background-position: center;
   min-height: 320px;
 }
 

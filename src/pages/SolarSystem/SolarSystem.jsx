@@ -7,7 +7,7 @@ import CosmicBackground from '../../components/3D/CosmicBackground.jsx';
 import { bodies } from '../../data/planets.js';
 import './solarSystem.css';
 
-const REAL_BODIES = bodies.filter((b) => b.texture && !b.isBelt && !b.isCloud);
+const REAL_BODIES = bodies.filter((b) => b.texture && !b.isBelt && !b.isCloud && !b.isSatellite);
 
 function OrbitRing({ radius }) {
   const points = useMemo(() => {
@@ -27,15 +27,32 @@ function OrbitRing({ radius }) {
   );
 }
 
-function Sun({ body }) {
+function Sun({ body, onSelect, selected }) {
   const map = useLoader(THREE.TextureLoader, body.texture);
   const ref = useRef();
+  const [hovered, setHovered] = useState(false);
   useFrame((_, dt) => {
     if (ref.current) ref.current.rotation.y += dt * 0.05;
   });
   return (
     <group>
-      <mesh ref={ref}>
+      <mesh
+        ref={ref}
+        scale={hovered || selected?.id === body.id ? 1.06 : 1}
+        onClick={(e) => {
+          e.stopPropagation();
+          onSelect(body);
+        }}
+        onPointerOver={(e) => {
+          e.stopPropagation();
+          setHovered(true);
+          document.body.style.cursor = 'pointer';
+        }}
+        onPointerOut={() => {
+          setHovered(false);
+          document.body.style.cursor = 'auto';
+        }}
+      >
         <sphereGeometry args={[2.6, 64, 64]} />
         <meshBasicMaterial map={map} />
       </mesh>
@@ -48,7 +65,7 @@ function Sun({ body }) {
   );
 }
 
-function OrbitingBody({ body, onSelect, selected }) {
+function OrbitingBody({ body, onSelect, selected, children }) {
   const map = useLoader(THREE.TextureLoader, body.texture);
   const ring = body.hasRings && body.ringTexture ? useLoader(THREE.TextureLoader, body.ringTexture) : null;
   const groupRef = useRef();
@@ -94,6 +111,55 @@ function OrbitingBody({ body, onSelect, selected }) {
           <meshBasicMaterial map={ring} side={THREE.DoubleSide} transparent opacity={0.9} />
         </mesh>
       )}
+      {children}
+    </group>
+  );
+}
+
+// Orbits its parent planet's local origin rather than the Sun. Nested inside
+// the parent's own <group>, so it automatically rides along with the
+// planet's orbit around the Sun while circling the planet on its own,
+// much smaller, faster loop — exactly like the Moon around Earth.
+function SatelliteBody({ body, onSelect, selected }) {
+  const map = useLoader(THREE.TextureLoader, body.texture);
+  const bump = body.bumpTexture ? useLoader(THREE.TextureLoader, body.bumpTexture) : null;
+  const groupRef = useRef();
+  const meshRef = useRef();
+  const angle = useRef(Math.random() * Math.PI * 2);
+  const [hovered, setHovered] = useState(false);
+  const visualRadius = Math.max(0.12, body.renderScale * 0.75);
+
+  useFrame((_, dt) => {
+    angle.current += dt * body.orbitSpeed * 0.12;
+    if (groupRef.current) {
+      groupRef.current.position.x = Math.cos(angle.current) * body.orbitRadius;
+      groupRef.current.position.z = Math.sin(angle.current) * body.orbitRadius;
+    }
+    if (meshRef.current) meshRef.current.rotation.y += dt * 0.25;
+  });
+
+  return (
+    <group ref={groupRef}>
+      <mesh
+        ref={meshRef}
+        scale={hovered || selected?.id === body.id ? 1.3 : 1}
+        onClick={(e) => {
+          e.stopPropagation();
+          onSelect(body);
+        }}
+        onPointerOver={(e) => {
+          e.stopPropagation();
+          setHovered(true);
+          document.body.style.cursor = 'pointer';
+        }}
+        onPointerOut={() => {
+          setHovered(false);
+          document.body.style.cursor = 'auto';
+        }}
+      >
+        <sphereGeometry args={[visualRadius, 32, 32]} />
+        <meshStandardMaterial map={map} bumpMap={bump ?? undefined} bumpScale={0.03} roughness={0.95} metalness={0.02} />
+      </mesh>
     </group>
   );
 }
@@ -102,6 +168,8 @@ export default function SolarSystem() {
   const [selected, setSelected] = useState(null);
   const sun = bodies.find((b) => b.isStar);
   const planets = REAL_BODIES.filter((b) => !b.isStar);
+  const satellites = bodies.filter((b) => b.isSatellite);
+  const satelliteOf = (parentId) => satellites.filter((s) => s.parentId === parentId);
 
   return (
     <div id="scroll-root" className="vg-ss-page">
@@ -109,11 +177,18 @@ export default function SolarSystem() {
         <Suspense fallback={null}>
           <CosmicBackground />
           <directionalLight position={[0, 10, 0]} intensity={0.4} />
-          <Sun body={sun} />
+          <Sun body={sun} onSelect={setSelected} selected={selected} />
           {planets.map((body) => (
             <group key={body.id}>
               <OrbitRing radius={body.orbitRadius} />
-              <OrbitingBody body={body} onSelect={setSelected} selected={selected} />
+              <OrbitingBody body={body} onSelect={setSelected} selected={selected}>
+                {satelliteOf(body.id).map((moon) => (
+                  <group key={moon.id}>
+                    <OrbitRing radius={moon.orbitRadius} />
+                    <SatelliteBody body={moon} onSelect={setSelected} selected={selected} />
+                  </group>
+                ))}
+              </OrbitingBody>
             </group>
           ))}
           <OrbitControls
@@ -125,8 +200,6 @@ export default function SolarSystem() {
           />
         </Suspense>
       </Canvas>
-
-      <div className="vg-ss-hint mono">Seret untuk memutar · scroll untuk zoom · klik planet untuk detail</div>
 
       <AnimatePresence mode="wait">
         {selected && (

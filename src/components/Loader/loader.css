@@ -19,12 +19,25 @@
   justify-content: center;
 }
 
-.vg-loader-core {
-  width: 26px;
-  height: 26px;
+.vg-loader-icon {
+  width: 48px;
+  height: 48px;
+  object-fit: contain;
   border-radius: 50%;
-  background: var(--solar);
-  box-shadow: 0 0 40px 8px var(--solar-dim);
+  filter: drop-shadow(0 0 12px var(--solar-dim));
+  animation: vg-pulse 2.4s ease-in-out infinite;
+}
+
+@keyframes vg-pulse {
+  0%,
+  100% {
+    transform: scale(1);
+    filter: drop-shadow(0 0 12px var(--solar-dim));
+  }
+  50% {
+    transform: scale(1.08);
+    filter: drop-shadow(0 0 22px var(--solar));
+  }
 }
 
 .vg-loader-ring {

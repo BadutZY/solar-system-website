@@ -1,17 +1,8 @@
 import { useMemo, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import useLenis from '../../hooks/useLenis.js';
-import { bodies } from '../../data/planets.js';
+import { galleryItems, GALLERY_CATEGORIES } from '../../data/gallery.js';
 import './gallery.css';
-
-function categoryOf(body) {
-  if (body.isStar) return 'Bintang';
-  if (body.isBelt) return 'Sabuk';
-  if (body.isCloud) return 'Awan';
-  return 'Planet';
-}
-
-const CATEGORIES = ['Semua', 'Bintang', 'Planet', 'Sabuk', 'Awan'];
 
 export default function Gallery() {
   useLenis();
@@ -19,10 +10,7 @@ export default function Gallery() {
   const [active, setActive] = useState(null);
 
   const items = useMemo(
-    () =>
-      bodies
-        .map((b) => ({ ...b, category: categoryOf(b) }))
-        .filter((b) => filter === 'Semua' || b.category === filter),
+    () => galleryItems.filter((item) => filter === 'Semua' || item.category === filter),
     [filter]
   );
 
@@ -32,12 +20,11 @@ export default function Gallery() {
         <span className="eyebrow">Arsip Visual</span>
         <h1>Gallery</h1>
         <p>
-          Koleksi visual setiap objek dalam Tata Surya. Tempatkan foto asli NASA/ESA di{' '}
-          <code>public/gallery/</code> untuk menggantikan ubin prosedural ini.
+          Koleksi visual setiap objek dalam Tata Surya.
         </p>
 
         <div className="vg-gallery-filters">
-          {CATEGORIES.map((c) => (
+          {GALLERY_CATEGORIES.map((c) => (
             <button
               key={c}
               className={`vg-filter-btn ${filter === c ? 'is-active' : ''}`}
@@ -50,24 +37,25 @@ export default function Gallery() {
       </section>
 
       <div className="vg-masonry">
-        {items.map((body, i) => (
+        {items.map((item, i) => (
           <motion.button
-            key={body.id}
+            key={item.id}
             className="vg-tile"
             style={{
-              '--accent': body.color,
+              '--accent': item.color,
               aspectRatio: i % 3 === 0 ? '3 / 4' : i % 3 === 1 ? '1 / 1' : '4 / 5',
             }}
             initial={{ opacity: 0, y: 24 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, amount: 0.2 }}
             transition={{ duration: 0.5, delay: (i % 6) * 0.05 }}
-            onClick={() => setActive(body)}
+            onClick={() => setActive(item)}
           >
+            <img className="vg-tile-img" src={item.image} alt={item.name} loading="lazy" />
             <span className="vg-tile-glow" />
             <span className="vg-tile-label">
-              <strong>{body.name}</strong>
-              <em className="mono">{body.category}</em>
+              <strong>{item.name}</strong>
+              <em className="mono">{item.category}</em>
             </span>
           </motion.button>
         ))}
@@ -91,7 +79,10 @@ export default function Gallery() {
               transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
               onClick={(e) => e.stopPropagation()}
             >
-              <span className="vg-lightbox-visual" />
+              <span
+                className="vg-lightbox-visual"
+                style={{ backgroundImage: `url(${active.image})` }}
+              />
               <div className="vg-lightbox-info">
                 <span className="eyebrow">{active.subtitle}</span>
                 <h2>{active.name}</h2>

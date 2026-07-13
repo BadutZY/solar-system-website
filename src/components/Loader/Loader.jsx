@@ -35,12 +35,12 @@ export default function Loader({ onDone }) {
           transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
         >
           <div className="vg-loader-orbit">
-            <div className="vg-loader-core" />
+            <img src="/icon.png" alt="Voyager" className="vg-loader-icon" />
             <div className="vg-loader-ring" />
             <div className="vg-loader-ring vg-loader-ring--2" />
           </div>
           <div className="vg-loader-label mono">
-            <span>INITIALIZING VOYAGER</span>
+            <span>INITIALIZING SOLAR SYSTEM</span>
             <span className="vg-loader-percent">{progress}%</span>
           </div>
           <div className="vg-loader-bar">
