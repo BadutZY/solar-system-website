@@ -128,27 +128,69 @@ export default function SolarSystem() {
 
       <div className="vg-ss-hint mono">Seret untuk memutar · scroll untuk zoom · klik planet untuk detail</div>
 
-      <AnimatePresence>
+      <AnimatePresence mode="wait">
         {selected && (
           <motion.div
+            key={selected.id}
             className="vg-ss-panel"
-            initial={{ opacity: 0, x: 40 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: 40 }}
-            transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+            initial={{ opacity: 0, x: 56, scale: 0.94, filter: 'blur(10px)' }}
+            animate={{ opacity: 1, x: 0, scale: 1, filter: 'blur(0px)' }}
+            exit={{ opacity: 0, x: 40, scale: 0.96, filter: 'blur(6px)' }}
+            transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
           >
             <button className="vg-ss-close" onClick={() => setSelected(null)} aria-label="Tutup panel">
               ×
             </button>
-            <span className="eyebrow">{selected.subtitle}</span>
-            <h3>{selected.name}</h3>
-            <p>{selected.description}</p>
-            <div className="vg-ss-stats mono">
-              <div><span>Diameter</span><b>{selected.stats.diameter}</b></div>
-              <div><span>Jarak dari Matahari</span><b>{selected.stats.distanceFromSun}</b></div>
-              <div><span>Revolusi</span><b>{selected.stats.revolution}</b></div>
-              <div><span>Satelit</span><b>{selected.stats.moons}</b></div>
-            </div>
+
+            <motion.span
+              className="eyebrow"
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.12, duration: 0.35 }}
+            >
+              {selected.subtitle}
+            </motion.span>
+
+            <motion.h3
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.18, duration: 0.4 }}
+            >
+              {selected.name}
+            </motion.h3>
+
+            <motion.p
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.24, duration: 0.4 }}
+            >
+              {selected.description}
+            </motion.p>
+
+            <motion.div
+              className="vg-ss-stats mono"
+              initial="hidden"
+              animate="show"
+              transition={{ staggerChildren: 0.06, delayChildren: 0.32 }}
+            >
+              {[
+                ['Diameter', selected.stats.diameter],
+                ['Jarak dari Matahari', selected.stats.distanceFromSun],
+                ['Revolusi', selected.stats.revolution],
+                ['Satelit', selected.stats.moons],
+              ].map(([label, value]) => (
+                <motion.div
+                  key={label}
+                  variants={{
+                    hidden: { opacity: 0, y: 8 },
+                    show: { opacity: 1, y: 0, transition: { duration: 0.3 } },
+                  }}
+                >
+                  <span>{label}</span>
+                  <b>{value}</b>
+                </motion.div>
+              ))}
+            </motion.div>
           </motion.div>
         )}
       </AnimatePresence>

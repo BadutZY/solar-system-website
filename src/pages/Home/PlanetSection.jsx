@@ -33,9 +33,9 @@ export default function PlanetSection({ body, index, total, scrollContainerRef }
     restDelta: 0.001,
   });
   const ySpring = useSpring(scrollYProgress, {
-    stiffness: 5,
-    damping: 20,
-    mass: 2.2,
+    stiffness: 3,
+    damping: 22,
+    mass: 2.8,
     restDelta: 0.001,
   });
   const opacityProgress = reduced ? scrollYProgress : opacitySpring;
