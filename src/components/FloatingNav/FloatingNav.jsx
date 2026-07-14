@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
+import { useLanguage } from '../../i18n/LanguageContext.jsx';
 import './floatingNav.css';
 
 // Minimal stroke-style icons, drawn inline so no icon library is required.
@@ -34,16 +35,17 @@ const ICONS = {
   ),
 };
 
-const LINKS = [
-  { to: '/', label: 'Home', icon: 'home' },
-  { to: '/solar-system', label: 'Solar System', icon: 'orbit' },
-  { to: '/gallery', label: 'Gallery', icon: 'gallery' },
-  { to: '/about', label: 'About', icon: 'about' },
-];
-
 export default function FloatingNav({ onNavigateSound }) {
   const [open, setOpen] = useState(false);
   const location = useLocation();
+  const { t } = useLanguage();
+
+  const LINKS = [
+    { to: '/', label: t('nav.home'), icon: 'home' },
+    { to: '/solar-system', label: t('nav.solarSystem'), icon: 'orbit' },
+    { to: '/gallery', label: t('nav.gallery'), icon: 'gallery' },
+    { to: '/about', label: t('nav.about'), icon: 'about' },
+  ];
 
   useEffect(() => setOpen(false), [location.pathname]);
 
@@ -62,12 +64,12 @@ export default function FloatingNav({ onNavigateSound }) {
     <>
       <Link to="/" className="vg-brand" onClick={onNavigateSound}>
         <span className="vg-brand-dot" />
-        Solar System
+        {t('nav.brand')}
       </Link>
 
       <button
         className={`vg-fab ${open ? 'is-open' : ''}`}
-        aria-label={open ? 'Tutup menu' : 'Buka menu navigasi'}
+        aria-label={open ? t('nav.closeMenu') : t('nav.openMenu')}
         aria-expanded={open}
         onClick={() => {
           setOpen((o) => !o);

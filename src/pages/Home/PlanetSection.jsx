@@ -1,18 +1,11 @@
 import { useRef, useState } from 'react';
 import { AnimatePresence, motion, useScroll, useSpring, useTransform, useReducedMotion } from 'framer-motion';
+import { useLanguage } from '../../i18n/LanguageContext.jsx';
 
-const STAT_LABELS = [
-  ['diameter', 'Diameter'],
-  ['mass', 'Massa'],
-  ['gravity', 'Gravitasi'],
-  ['temperature', 'Suhu'],
-  ['distanceFromSun', 'Jarak dari Matahari'],
-  ['rotation', 'Rotasi'],
-  ['revolution', 'Revolusi'],
-  ['moons', 'Satelit'],
-];
+const STAT_KEYS = ['diameter', 'mass', 'gravity', 'temperature', 'distanceFromSun', 'rotation', 'revolution', 'moons'];
 
 export default function PlanetSection({ body, index, total, scrollContainerRef }) {
+  const { t } = useLanguage();
   const ref = useRef(null);
   const reduced = !!useReducedMotion();
   const { scrollYProgress } = useScroll({
@@ -23,25 +16,21 @@ export default function PlanetSection({ body, index, total, scrollContainerRef }
 
   // Raw scrollYProgress snaps instantly to wherever the scroll-snap engine
   // lands, which reads as an abrupt cut. Passing it through a spring gives
-  // the panel real time-based inertia. Opacity and the vertical slide use
-  // separate springs so each can be tuned independently — the fade timing
-  // is already right, the vertical slide needed to be slower/softer.
+  // the panel real time-based inertia for its fade in/out.
+  //
+  // NOTE: the panel intentionally does NOT move vertically with scroll —
+  // it stays locked in the same spot at all times. An earlier version also
+  // translated it up/down (a "parallax" slide), but that read as an
+  // unwanted bob/jitter, especially on mobile where the panel is docked to
+  // the bottom of the screen. Only opacity animates now.
   const opacitySpring = useSpring(scrollYProgress, {
     stiffness: 18,
     damping: 22,
     mass: 1.4,
     restDelta: 0.001,
   });
-  const ySpring = useSpring(scrollYProgress, {
-    stiffness: 3,
-    damping: 22,
-    mass: 2.8,
-    restDelta: 0.001,
-  });
   const opacityProgress = reduced ? scrollYProgress : opacitySpring;
-  const yProgress = reduced ? scrollYProgress : ySpring;
 
-  const yInfo = useTransform(yProgress, [0, 0.5, 1], reduced ? [0, 0, 0] : [70, 0, -70]);
   const opacityInfo = useTransform(opacityProgress, [0, 0.32, 0.68, 1], [0, 1, 1, 0]);
 
   // Alternates left/right — MUST match sideSignForIndex() in HomeCanvas.jsx
@@ -54,7 +43,7 @@ export default function PlanetSection({ body, index, total, scrollContainerRef }
     <section id={body.id} ref={ref} className={`vg-planet-section side-${side}`}>
       <motion.div
         className="vg-planet-panel"
-        style={{ y: yInfo, opacity: opacityInfo }}
+        style={{ opacity: opacityInfo }}
       >
         <span className="vg-planet-index mono">
           {String(index + 1).padStart(2, '0')} / {String(total).padStart(2, '0')}
@@ -64,9 +53,9 @@ export default function PlanetSection({ body, index, total, scrollContainerRef }
         <p className="vg-planet-desc">{body.description}</p>
 
         <div className="vg-telemetry">
-          {STAT_LABELS.map(([key, label]) => (
+          {STAT_KEYS.map((key) => (
             <div className="vg-telemetry-cell" key={key}>
-              <span className="vg-telemetry-label mono">{label}</span>
+              <span className="vg-telemetry-label mono">{t(`planetSection.${key}`)}</span>
               <span className="vg-telemetry-value mono">{body.stats[key]}</span>
             </div>
           ))}
@@ -79,7 +68,7 @@ export default function PlanetSection({ body, index, total, scrollContainerRef }
             onClick={() => setMoreOpen((o) => !o)}
             aria-expanded={moreOpen}
           >
-            {moreOpen ? 'Sembunyikan ↑' : 'Lebih Dalam ↓'}
+            {moreOpen ? t('planetSection.less') : t('planetSection.more')}
           </button>
 
           <AnimatePresence initial={false}>
@@ -98,17 +87,17 @@ export default function PlanetSection({ body, index, total, scrollContainerRef }
               >
                 <div className="vg-planet-more-inner">
                   <p>
-                    <strong>Struktur:</strong> {body.stats.structure}
+                    <strong>{t('planetSection.structure')}:</strong> {body.stats.structure}
                   </p>
                   <p>
-                    <strong>Atmosfer:</strong> {body.stats.atmosphere}
+                    <strong>{t('planetSection.atmosphere')}:</strong> {body.stats.atmosphere}
                   </p>
                   <p>
-                    <strong>Fenomena:</strong> {body.stats.phenomena}
+                    <strong>{t('planetSection.phenomena')}:</strong> {body.stats.phenomena}
                   </p>
                   {body.missions && (
                     <>
-                      <strong>Misi Eksplorasi:</strong>
+                      <strong>{t('planetSection.missions')}:</strong>
                       <ul>
                         {body.missions.map((m) => (
                           <li key={m}>{m}</li>
@@ -118,17 +107,17 @@ export default function PlanetSection({ body, index, total, scrollContainerRef }
                   )}
                   {body.timeline && (
                     <>
-                      <strong>Timeline Penelitian:</strong>
+                      <strong>{t('planetSection.timeline')}:</strong>
                       <ul>
-                        {body.timeline.map((t) => (
-                          <li key={t.year}>
-                            <span className="mono">{t.year}</span> — {t.event}
+                        {body.timeline.map((entry) => (
+                          <li key={entry.year}>
+                            <span className="mono">{entry.year}</span> - {entry.event}
                           </li>
                         ))}
                       </ul>
                     </>
                   )}
-                  <strong>Fakta Menarik:</strong>
+                  <strong>{t('planetSection.funFact')}:</strong>
                   <p>{body.funFact}</p>
                   {body.uniqueFacts && (
                     <ul>

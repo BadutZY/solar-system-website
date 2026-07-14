@@ -1,13 +1,12 @@
-import { Suspense, useMemo, useRef, useState } from 'react';
+import { Suspense, useEffect, useMemo, useRef, useState } from 'react';
 import { Canvas, useFrame, useLoader } from '@react-three/fiber';
 import { OrbitControls } from '@react-three/drei';
 import { AnimatePresence, motion } from 'framer-motion';
 import * as THREE from 'three';
 import CosmicBackground from '../../components/3D/CosmicBackground.jsx';
-import { bodies } from '../../data/planets.js';
+import { getBodies } from '../../data/planets.js';
+import { useLanguage } from '../../i18n/LanguageContext.jsx';
 import './solarSystem.css';
-
-const REAL_BODIES = bodies.filter((b) => b.texture && !b.isBelt && !b.isCloud && !b.isSatellite);
 
 function OrbitRing({ radius }) {
   const points = useMemo(() => {
@@ -165,7 +164,17 @@ function SatelliteBody({ body, onSelect, selected }) {
 }
 
 export default function SolarSystem() {
+  const { language, t } = useLanguage();
+  const bodies = useMemo(() => getBodies(language), [language]);
+  const REAL_BODIES = useMemo(
+    () => bodies.filter((b) => b.texture && !b.isBelt && !b.isCloud && !b.isSatellite),
+    [bodies]
+  );
   const [selected, setSelected] = useState(null);
+  useEffect(() => {
+    setSelected((prev) => (prev ? bodies.find((b) => b.id === prev.id) ?? null : prev));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [bodies]);
   const sun = bodies.find((b) => b.isStar);
   const planets = REAL_BODIES.filter((b) => !b.isStar);
   const satellites = bodies.filter((b) => b.isSatellite);
@@ -211,7 +220,7 @@ export default function SolarSystem() {
             exit={{ opacity: 0, x: 40, scale: 0.96, filter: 'blur(6px)' }}
             transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
           >
-            <button className="vg-ss-close" onClick={() => setSelected(null)} aria-label="Tutup panel">
+            <button className="vg-ss-close" onClick={() => setSelected(null)} aria-label={t('solarSystem.closeAria')}>
               ×
             </button>
 
@@ -247,10 +256,10 @@ export default function SolarSystem() {
               transition={{ staggerChildren: 0.06, delayChildren: 0.32 }}
             >
               {[
-                ['Diameter', selected.stats.diameter],
-                ['Jarak dari Matahari', selected.stats.distanceFromSun],
-                ['Revolusi', selected.stats.revolution],
-                ['Satelit', selected.stats.moons],
+                [t('solarSystem.diameter'), selected.stats.diameter],
+                [t('solarSystem.distanceFromSun'), selected.stats.distanceFromSun],
+                [t('solarSystem.revolution'), selected.stats.revolution],
+                [t('solarSystem.moons'), selected.stats.moons],
               ].map(([label, value]) => (
                 <motion.div
                   key={label}

@@ -162,6 +162,38 @@
 }
 
 @media (max-width: 720px) {
+  .vg-gallery-page {
+    padding: 7rem 5vw 4rem;
+  }
+
+  .vg-masonry {
+    /* The `columns: 4 280px` rule above collapses to a single column once
+       the viewport is narrower than ~280px * 2, which is what made the
+       gallery look like one big stacked list on phones. Force exactly 2
+       columns here instead, with a smaller gap so tiles stay compact. */
+    columns: 2;
+    column-gap: 0.6rem;
+  }
+
+  .vg-tile {
+    margin-bottom: 0.6rem;
+    border-radius: 14px;
+  }
+
+  .vg-tile-label {
+    left: 0.7rem;
+    bottom: 0.7rem;
+    gap: 0.1rem;
+  }
+
+  .vg-tile-label strong {
+    font-size: 0.85rem;
+  }
+
+  .vg-tile-label em {
+    font-size: 0.6rem;
+  }
+
   .vg-lightbox-card {
     grid-template-columns: 1fr;
   }

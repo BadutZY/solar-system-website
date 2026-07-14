@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useLanguage } from '../../i18n/LanguageContext.jsx';
 import './loader.css';
 
 export default function Loader({ onDone }) {
   const [progress, setProgress] = useState(0);
   const [visible, setVisible] = useState(true);
+  const { t } = useLanguage();
 
   useEffect(() => {
     let raf;
@@ -40,7 +42,7 @@ export default function Loader({ onDone }) {
             <div className="vg-loader-ring vg-loader-ring--2" />
           </div>
           <div className="vg-loader-label mono">
-            <span>INITIALIZING SOLAR SYSTEM</span>
+            <span>{t('loader.initializing')}</span>
             <span className="vg-loader-percent">{progress}%</span>
           </div>
           <div className="vg-loader-bar">

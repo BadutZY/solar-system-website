@@ -204,17 +204,64 @@
 }
 
 @media (max-width: 860px) {
-  .vg-planet-panel {
-    width: 90vw;
-    max-height: 62vh;
-    top: auto;
-    bottom: 2vh;
+  .vg-hero {
+    max-width: 100%;
+    padding: 0 7vw;
+    align-items: center;
+    text-align: center;
   }
+
+  .vg-hero-desc {
+    max-width: 100%;
+  }
+
+  /* One-column layout: the section becomes a flex column with an open
+     top strip (where the fixed 3D canvas shows through, planet centered
+     there — see HomeCanvas.jsx) and the description panel docked to the
+     bottom. No more left/right split like on desktop. */
+  .vg-planet-section {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: flex-end;
+  }
+
+  .vg-planet-panel,
   .vg-planet-section.side-left .vg-planet-panel,
   .vg-planet-section.side-right .vg-planet-panel {
-    left: 5vw;
-    right: 5vw;
+    position: static;
+    left: auto;
+    right: auto;
+    top: auto;
+    width: 92vw;
+    max-width: 92vw;
+    margin: 0 auto;
+    /* Leave room above the fixed audio toggle button (bottom-right,
+       ~50px + 1.8rem) so it never sits on top of the panel's text. */
+    margin-bottom: calc(4.6rem + env(safe-area-inset-bottom, 0px));
+    max-height: 52vh;
+    padding: 1.4rem 1.3rem;
+    border-radius: 20px;
   }
+
+  .vg-planet-name {
+    font-size: clamp(1.6rem, 6vw, 2.1rem);
+  }
+
+  .vg-telemetry {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.3rem 0.7rem;
+  }
+
+  .vg-telemetry-cell {
+    flex-direction: column;
+    gap: 0.1rem;
+  }
+
+  .vg-telemetry-value {
+    text-align: left;
+  }
+
   .vg-home-progress {
     display: none;
   }

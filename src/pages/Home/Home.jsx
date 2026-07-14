@@ -1,8 +1,9 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 import HomeCanvas from '../../components/3D/HomeCanvas.jsx';
 import PlanetSection from './PlanetSection.jsx';
-import { bodies } from '../../data/planets.js';
+import { getBodies } from '../../data/planets.js';
+import { useLanguage } from '../../i18n/LanguageContext.jsx';
 import './home.css';
 
 const TOTAL_SECTIONS_OFFSET = 1; // hero occupies section index 0
@@ -35,12 +36,30 @@ function animateScrollTo(el, targetTop, duration, onDone) {
   return () => cancelAnimationFrame(rafId);
 }
 
+const MOBILE_QUERY = '(max-width: 860px)';
+
 export default function Home() {
+  const { language, t } = useLanguage();
+  const bodies = useMemo(() => getBodies(language), [language]);
   const containerRef = useRef(null);
   const progressRef = useRef({ value: 0 });
   const [activeIndex, setActiveIndex] = useState(0);
   const wheelLockRef = useRef(false);
   const cancelAnimRef = useRef(null);
+
+  // Drives the 3D camera framing: on mobile the planet needs to stay
+  // centered in the open top strip above the description panel, instead of
+  // being pushed left/right like on desktop (see HomeCanvas.jsx).
+  const [isMobile, setIsMobile] = useState(
+    () => typeof window !== 'undefined' && window.matchMedia(MOBILE_QUERY).matches,
+  );
+
+  useEffect(() => {
+    const mql = window.matchMedia(MOBILE_QUERY);
+    const onChange = (e) => setIsMobile(e.matches);
+    mql.addEventListener('change', onChange);
+    return () => mql.removeEventListener('change', onChange);
+  }, []);
 
   useEffect(() => {
     const el = containerRef.current;
@@ -121,7 +140,7 @@ export default function Home() {
   return (
     <div className="vg-home">
       <div className="vg-home-canvas">
-        <HomeCanvas progressRef={progressRef} />
+        <HomeCanvas progressRef={progressRef} isMobile={isMobile} />
       </div>
 
       <div id="scroll-root" ref={containerRef} className="vg-home-scroll">
@@ -133,7 +152,7 @@ export default function Home() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2, duration: 0.6 }}
           >
-            Sebuah perjalanan sinematik
+            {t('home.eyebrow')}
           </motion.p>
           <motion.h1
             className="vg-hero-title"
@@ -141,9 +160,9 @@ export default function Home() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.35, duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
           >
-            Explore The
+            {t('home.titleLine1')}
             <br />
-            Solar System
+            {t('home.titleLine2')}
           </motion.h1>
           <motion.p
             className="vg-hero-desc"
@@ -151,8 +170,7 @@ export default function Home() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.55, duration: 0.7 }}
           >
-            Dari kobaran Matahari hingga keheningan Awan Oort — telusuri setiap
-            planet dalam satu perjalanan scroll yang berkelanjutan.
+            {t('home.description')}
           </motion.p>
           <motion.button
             className="btn-primary"
@@ -161,7 +179,7 @@ export default function Home() {
             transition={{ delay: 0.75, duration: 0.6 }}
             onClick={() => scrollToBody(0)}
           >
-            Begin Exploration ↓
+            {t('home.cta')}
           </motion.button>
         </section>
 
@@ -183,7 +201,7 @@ export default function Home() {
             key={body.id}
             className={`vg-home-dot ${activeIndex === i ? 'is-active' : ''}`}
             onClick={() => scrollToBody(i)}
-            aria-label={`Loncat ke ${body.name}`}
+            aria-label={`${t('home.jumpTo')} ${body.name}`}
             title={body.name}
           />
         ))}

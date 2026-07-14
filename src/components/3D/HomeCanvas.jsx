@@ -4,13 +4,26 @@ import * as THREE from 'three';
 import CosmicBackground from './CosmicBackground.jsx';
 import TexturedPlanet from './TexturedPlanet.jsx';
 import BeltParticles from './BeltParticles.jsx';
-import { bodies } from '../../data/planets.js';
+import { getBodies } from '../../data/planets.js';
+
+const bodies = getBodies('en');
 
 const SPACING = 15;
 // How far (world units) to push the look-at target away from the planet so
 // the planet itself renders off-center, inside whichever half of the screen
-// is NOT covered by the text panel for that section.
+// is NOT covered by the text panel for that section. Desktop only — on
+// mobile the panel lives below the fold (see home.css), so the planet stays
+// horizontally centered instead.
 const FRAME_OFFSET = 2.6;
+
+// Mobile panel sits across the bottom ~55-60% of the screen, so the planet
+// needs to sit higher in frame to stay clear of it. Shifting the look-at
+// target down in world space pushes the rendered subject up on screen.
+const MOBILE_VERTICAL_LIFT = 2.4;
+// Camera pulls back further on mobile so the planet reads comfortably
+// inside the narrower open strip above the panel.
+const MOBILE_CAM_OFFSET = new THREE.Vector3(0, 2.1, 10.5);
+const DESKTOP_CAM_OFFSET = new THREE.Vector3(2.2, 1.4, 7.5);
 
 function planetWorldPositions() {
   return bodies.map((b, i) => new THREE.Vector3(i * SPACING, Math.sin(i * 1.3) * 1.2, Math.cos(i * 0.7) * 3));
@@ -24,7 +37,7 @@ function sideSignForIndex(i) {
   return i % 2 === 0 ? -1 : 1;
 }
 
-function CameraRig({ progressRef }) {
+function CameraRig({ progressRef, isMobile }) {
   const positions = useMemo(planetWorldPositions, []);
   const lookTarget = useRef(new THREE.Vector3());
   const rightVec = useRef(new THREE.Vector3(1, 0, 0));
@@ -39,7 +52,7 @@ function CameraRig({ progressRef }) {
 
     const focus = new THREE.Vector3().lerpVectors(a, b, frac);
 
-    const camOffset = new THREE.Vector3(2.2, 1.4, 7.5);
+    const camOffset = isMobile ? MOBILE_CAM_OFFSET : DESKTOP_CAM_OFFSET;
     const camPos = new THREE.Vector3().lerpVectors(a, b, frac).add(camOffset);
     camera.position.lerp(camPos, 0.06);
 
@@ -49,9 +62,17 @@ function CameraRig({ progressRef }) {
     const forward = new THREE.Vector3().subVectors(focus, camera.position).normalize();
     rightVec.current.crossVectors(forward, camera.up).normalize();
 
-    const nearestIndex = Math.round(t);
-    const sign = sideSignForIndex(nearestIndex);
-    const aimPoint = focus.clone().add(rightVec.current.clone().multiplyScalar(FRAME_OFFSET * sign));
+    let aimPoint;
+    if (isMobile) {
+      // No left/right push — the panel is full-width and docked to the
+      // bottom, so the planet just needs to stay centered and lifted into
+      // the open strip above it.
+      aimPoint = focus.clone().add(new THREE.Vector3(0, -MOBILE_VERTICAL_LIFT, 0));
+    } else {
+      const nearestIndex = Math.round(t);
+      const sign = sideSignForIndex(nearestIndex);
+      aimPoint = focus.clone().add(rightVec.current.clone().multiplyScalar(FRAME_OFFSET * sign));
+    }
 
     lookTarget.current.lerp(aimPoint, 0.08);
     camera.lookAt(lookTarget.current);
@@ -87,7 +108,7 @@ function PlanetTrail() {
   );
 }
 
-export default function HomeCanvas({ progressRef }) {
+export default function HomeCanvas({ progressRef, isMobile = false }) {
   return (
     <Canvas
       shadows
@@ -99,7 +120,7 @@ export default function HomeCanvas({ progressRef }) {
         <CosmicBackground />
         <directionalLight position={[10, 8, 5]} intensity={0.6} color="#ffe9c7" />
         <PlanetTrail />
-        <CameraRig progressRef={progressRef} />
+        <CameraRig progressRef={progressRef} isMobile={isMobile} />
       </Suspense>
     </Canvas>
   );

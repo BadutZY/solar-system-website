@@ -1,36 +1,44 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import useLenis from '../../hooks/useLenis.js';
-import { galleryItems, GALLERY_CATEGORIES } from '../../data/gallery.js';
+import { getGalleryItems, getGalleryCategories } from '../../data/gallery.js';
+import { useLanguage } from '../../i18n/LanguageContext.jsx';
 import './gallery.css';
 
 export default function Gallery() {
   useLenis();
-  const [filter, setFilter] = useState('Semua');
+  const { language, t } = useLanguage();
+  const [filter, setFilter] = useState('all');
   const [active, setActive] = useState(null);
 
+  const galleryItems = useMemo(() => getGalleryItems(language), [language]);
+  const categories = useMemo(() => getGalleryCategories(t), [language]);
+
+  useEffect(() => {
+    setActive((prev) => (prev ? galleryItems.find((it) => it.id === prev.id) ?? null : prev));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [galleryItems]);
+
   const items = useMemo(
-    () => galleryItems.filter((item) => filter === 'Semua' || item.category === filter),
-    [filter]
+    () => galleryItems.filter((item) => filter === 'all' || item.category === filter),
+    [filter, galleryItems]
   );
 
   return (
     <div id="scroll-root" className="vg-gallery-page">
       <section className="vg-gallery-intro">
-        <span className="eyebrow">Arsip Visual</span>
-        <h1>Gallery</h1>
-        <p>
-          Koleksi visual setiap objek dalam Tata Surya.
-        </p>
+        <span className="eyebrow">{t('gallery.eyebrow')}</span>
+        <h1>{t('gallery.title')}</h1>
+        <p>{t('gallery.description')}</p>
 
         <div className="vg-gallery-filters">
-          {GALLERY_CATEGORIES.map((c) => (
+          {categories.map((c) => (
             <button
-              key={c}
-              className={`vg-filter-btn ${filter === c ? 'is-active' : ''}`}
-              onClick={() => setFilter(c)}
+              key={c.key}
+              className={`vg-filter-btn ${filter === c.key ? 'is-active' : ''}`}
+              onClick={() => setFilter(c.key)}
             >
-              {c}
+              {c.label}
             </button>
           ))}
         </div>
@@ -55,7 +63,7 @@ export default function Gallery() {
             <span className="vg-tile-glow" />
             <span className="vg-tile-label">
               <strong>{item.name}</strong>
-              <em className="mono">{item.category}</em>
+              <em className="mono">{t(`gallery.categories.${item.category}`)}</em>
             </span>
           </motion.button>
         ))}
@@ -88,7 +96,7 @@ export default function Gallery() {
                 <h2>{active.name}</h2>
                 <p>{active.description}</p>
               </div>
-              <button className="vg-lightbox-close" onClick={() => setActive(null)}>
+              <button className="vg-lightbox-close" onClick={() => setActive(null)} aria-label={t('gallery.closeAria')}>
                 ×
               </button>
             </motion.div>

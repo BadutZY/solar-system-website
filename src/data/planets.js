@@ -1,17 +1,22 @@
 // Central content model for every stop on the Voyager journey.
-// Values are real published figures (rounded). Real texture maps are
-// loaded at runtime from a public CDN mirror (jsdelivr → GitHub) of the
-// open-source jeromeetienne/threex.planets asset set — the same source
-// used by the reference site. No binary assets are bundled in this repo;
-// the browser fetches them directly when the app runs.
+// Physical/structural data below is language-neutral (orbits, scale,
+// textures, colors). All translatable text (names, descriptions, stats
+// copy, mission notes, etc.) lives in ./planetsContent.js, keyed by
+// language and then by body id. Use getBodies(lang) to get the same
+// shape the rest of the app expects, merged for the requested language.
+//
+// Real texture maps are loaded at runtime from a public CDN mirror
+// (jsdelivr -> GitHub) of the open-source jeromeetienne/threex.planets
+// asset set. No binary assets are bundled in this repo; the browser
+// fetches them directly when the app runs.
+import { planetsContent } from './planetsContent.js';
+
 export const TEX = 'https://cdn.jsdelivr.net/gh/jeromeetienne/threex.planets@master/images';
 
-export const bodies = [
+const BASE_BODIES = [
   {
     id: 'sun',
     order: 0,
-    name: 'Matahari',
-    subtitle: 'Bintang induk Tata Surya',
     color: '#ffb545',
     emissive: '#ff8a00',
     isStar: true,
@@ -20,40 +25,10 @@ export const bodies = [
     orbitSpeed: 0,
     axialTilt: 7.25,
     texture: `${TEX}/sunmap.jpg`,
-    description:
-      'Matahari adalah bola plasma raksasa yang menyumbang lebih dari 99.8% massa Tata Surya. Reaksi fusi hidrogen di intinya melepaskan energi yang menerangi dan menghangatkan seluruh planet.',
-    funFact: 'Cahaya Matahari membutuhkan waktu sekitar 8 menit 20 detik untuk mencapai Bumi.',
-    stats: {
-      diameter: '1,392,700 km',
-      radius: '696,340 km',
-      mass: '1.989 × 10³⁰ kg',
-      volume: '1.412 × 10¹⁸ km³',
-      gravity: '274 m/s²',
-      temperature: 'Inti ~15 juta °C · Permukaan ~5,500 °C',
-      atmosphere: 'Fotosfer, Kromosfer, Korona (plasma terionisasi)',
-      rotation: '~27 hari (khatulistiwa)',
-      revolution: 'Mengorbit pusat Bimasakti setiap ~230 juta tahun',
-      distanceFromSun: '0 km (pusat referensi)',
-      moons: '0',
-      structure: 'Inti, zona radiatif, zona konvektif, fotosfer, korona',
-      phenomena: 'Bintik matahari, lidah api (solar flare), CME, angin matahari',
-    },
-    missions: ['Parker Solar Probe (2018)', 'SOHO (1995)', 'Solar Orbiter (2020)'],
-    timeline: [
-      { year: '1610', event: 'Galileo mengamati bintik matahari dengan teleskop.' },
-      { year: '1995', event: 'SOHO diluncurkan untuk mengamati Matahari terus-menerus.' },
-      { year: '2018', event: 'Parker Solar Probe menjadi wahana tercepat yang pernah dibuat manusia.' },
-    ],
-    uniqueFacts: [
-      'Matahari akan berubah menjadi raksasa merah dalam ~5 miliar tahun.',
-      'Setiap detik, Matahari mengubah 600 juta ton hidrogen menjadi helium.',
-    ],
   },
   {
     id: 'mercury',
     order: 1,
-    name: 'Merkurius',
-    subtitle: 'Planet terdekat dengan Matahari',
     color: '#9b9b93',
     renderScale: 0.38,
     orbitRadius: 6,
@@ -62,36 +37,10 @@ export const bodies = [
     texture: `${TEX}/mercurymap.jpg`,
     bumpTexture: `${TEX}/mercurybump.jpg`,
     surfaceStyle: 'rocky-harsh',
-    description:
-      'Merkurius adalah planet terkecil dan tercepat mengorbit Matahari. Tanpa atmosfer signifikan, permukaannya dipenuhi kawah akibat hantaman meteor, dengan pencahayaan yang sangat keras dan kontras.',
-    funFact: 'Satu hari di Merkurius (matahari terbit ke terbit lagi) setara 176 hari Bumi.',
-    stats: {
-      diameter: '4,879 km',
-      radius: '2,439.7 km',
-      mass: '3.301 × 10²³ kg',
-      volume: '6.083 × 10¹⁰ km³',
-      gravity: '3.7 m/s²',
-      temperature: '-173°C hingga 427°C',
-      atmosphere: 'Eksosfer tipis (oksigen, natrium, hidrogen)',
-      rotation: '58.6 hari Bumi',
-      revolution: '88 hari Bumi',
-      distanceFromSun: '57.9 juta km',
-      moons: '0',
-      structure: 'Inti besi besar (~85% radius), mantel tipis, kerak berbatu',
-      phenomena: 'Perbedaan suhu ekstrem siang-malam, kawah Caloris Basin',
-    },
-    missions: ['Mariner 10 (1974)', 'MESSENGER (2011)', 'BepiColombo (2025)'],
-    timeline: [
-      { year: '1974', event: 'Mariner 10 menjadi wahana pertama yang mengunjungi Merkurius.' },
-      { year: '2011', event: 'MESSENGER menjadi wahana pertama yang mengorbit Merkurius.' },
-    ],
-    uniqueFacts: ['Inti besinya sangat besar relatif terhadap ukuran planet.', 'Memiliki es air di kawah kutub yang selalu gelap.'],
   },
   {
     id: 'venus',
     order: 2,
-    name: 'Venus',
-    subtitle: 'Planet terpanas di Tata Surya',
     color: '#e8c27a',
     renderScale: 0.6,
     orbitRadius: 8.5,
@@ -100,36 +49,10 @@ export const bodies = [
     texture: `${TEX}/venusmap.jpg`,
     bumpTexture: `${TEX}/venusbump.jpg`,
     surfaceStyle: 'thick-yellow-atmosphere',
-    description:
-      'Venus diselimuti atmosfer tebal karbon dioksida yang memerangkap panas lewat efek rumah kaca ekstrem, menjadikannya planet terpanas meski bukan yang terdekat dengan Matahari. Awan asam sulfat memberi warna kekuningan khasnya.',
-    funFact: 'Venus berotasi berlawanan arah (retrograde) dan lebih lambat dari revolusinya sendiri.',
-    stats: {
-      diameter: '12,104 km',
-      radius: '6,051.8 km',
-      mass: '4.867 × 10²⁴ kg',
-      volume: '9.28 × 10¹¹ km³',
-      gravity: '8.87 m/s²',
-      temperature: '~465°C (konstan)',
-      atmosphere: '96.5% CO₂, 3.5% nitrogen, awan asam sulfat',
-      rotation: '243 hari Bumi (retrograde)',
-      revolution: '225 hari Bumi',
-      distanceFromSun: '108.2 juta km',
-      moons: '0',
-      structure: 'Inti logam, mantel silikat, kerak vulkanik luas',
-      phenomena: 'Efek rumah kaca ekstrem, badai petir di awan asam',
-    },
-    missions: ['Venera 7 (1970)', 'Magellan (1990)', 'Akatsuki (2015)'],
-    timeline: [
-      { year: '1970', event: 'Venera 7 menjadi wahana pertama mendarat di planet lain.' },
-      { year: '1990', event: 'Magellan memetakan 98% permukaan Venus dengan radar.' },
-    ],
-    uniqueFacts: ['Tekanan permukaannya 92 kali tekanan atmosfer Bumi.', 'Objek paling terang di langit malam setelah Bulan.'],
   },
   {
     id: 'earth',
     order: 3,
-    name: 'Bumi',
-    subtitle: 'Rumah kita, planet biru',
     color: '#2a6bd6',
     renderScale: 0.64,
     orbitRadius: 11.5,
@@ -139,36 +62,10 @@ export const bodies = [
     bumpTexture: `${TEX}/earthbump1k.jpg`,
     cloudTexture: `${TEX}/earthcloudmap.jpg`,
     surfaceStyle: 'earth-clouds-lights',
-    description:
-      'Satu-satunya planet yang diketahui menampung kehidupan. 71% permukaannya tertutup air, dengan atmosfer kaya oksigen, medan magnet pelindung, dan awan yang terus bergerak dinamis di atas benua dan samudra.',
-    funFact: 'Medan magnet Bumi melindungi kehidupan dari radiasi angin matahari yang mematikan.',
-    stats: {
-      diameter: '12,742 km',
-      radius: '6,371 km',
-      mass: '5.972 × 10²⁴ kg',
-      volume: '1.083 × 10¹² km³',
-      gravity: '9.81 m/s²',
-      temperature: '-88°C hingga 58°C',
-      atmosphere: '78% nitrogen, 21% oksigen, 1% gas lain',
-      rotation: '23.93 jam',
-      revolution: '365.25 hari',
-      distanceFromSun: '149.6 juta km (1 AU)',
-      moons: '1 (Bulan)',
-      structure: 'Inti dalam padat, inti luar cair, mantel, kerak',
-      phenomena: 'Lempeng tektonik aktif, siklus air, aurora',
-    },
-    missions: ['Sputnik 1 (1957)', 'ISS (1998–sekarang)', 'Landsat Program'],
-    timeline: [
-      { year: '1957', event: 'Sputnik 1 menjadi satelit buatan pertama mengorbit Bumi.' },
-      { year: '1969', event: 'Manusia pertama mendarat di Bulan lewat Apollo 11.' },
-    ],
-    uniqueFacts: ['Satu-satunya planet yang tidak dinamai menurut dewa Yunani/Romawi.', 'Memiliki lempeng tektonik aktif yang membentuk benua.'],
   },
   {
     id: 'moon',
     order: 3.5,
-    name: 'Bulan',
-    subtitle: 'Satelit alami Bumi',
     color: '#c9c9c9',
     renderScale: 0.27,
     orbitRadius: 1.7,
@@ -179,41 +76,10 @@ export const bodies = [
     texture: `${TEX}/moonmap1k.jpg`,
     bumpTexture: `${TEX}/moonbump1k.jpg`,
     surfaceStyle: 'cratered-grey',
-    description:
-      'Bulan adalah satelit alami sekaligus tetangga terdekat Bumi, diduga terbentuk sekitar 4.5 miliar tahun lalu dari puing tabrakan raksasa antara Bumi purba dan objek seukuran Mars. Permukaannya dipenuhi kawah tumbukan, dataran lava beku gelap (maria), dan pegunungan tinggi, tanpa atmosfer berarti yang bisa melindunginya dari hantaman meteor.',
-    funFact: 'Bulan adalah satelit alami terbesar kelima di Tata Surya dan satu-satunya benda langit selain Bumi yang pernah diinjak kaki manusia.',
-    stats: {
-      diameter: '3,474 km',
-      radius: '1,737.4 km',
-      mass: '7.342 × 10²² kg',
-      volume: '2.1958 × 10¹⁰ km³',
-      gravity: '1.62 m/s²',
-      temperature: '-173°C hingga 127°C',
-      atmosphere: 'Hampir vakum (eksosfer sangat tipis)',
-      rotation: '27.3 hari (terkunci sinkron terhadap Bumi)',
-      revolution: '27.3 hari sideris · 29.5 hari sinodis',
-      distanceFromSun: '384,400 km dari Bumi (rata-rata)',
-      moons: '0',
-      structure: 'Inti besi kecil, mantel silikat, kerak berbatu penuh kawah',
-      phenomena: 'Kuncian pasang surut (tidal locking), gerhana, pasang-surut air laut Bumi',
-    },
-    missions: ['Luna 2 (1959)', 'Apollo 11 (1969)', 'Chang\u2019e 4 (2019)'],
-    timeline: [
-      { year: '1959', event: 'Luna 2 menjadi wahana buatan manusia pertama yang mencapai permukaan Bulan.' },
-      { year: '1969', event: 'Apollo 11 mendaratkan Neil Armstrong dan Buzz Aldrin, manusia pertama di Bulan.' },
-      { year: '2019', event: 'Chang\u2019e 4 menjadi wahana pertama yang mendarat mulus di sisi jauh Bulan.' },
-    ],
-    uniqueFacts: [
-      'Gravitasi Bulan adalah penyebab utama pasang-surut air laut di Bumi.',
-      'Selalu menunjukkan sisi yang sama ke Bumi karena kuncian pasang surut (tidal locking).',
-      'Bulan perlahan menjauh dari Bumi sekitar 3.8 cm setiap tahun.',
-    ],
   },
   {
     id: 'mars',
     order: 4,
-    name: 'Mars',
-    subtitle: 'Planet merah',
     color: '#c1440e',
     renderScale: 0.42,
     orbitRadius: 15,
@@ -222,36 +88,10 @@ export const bodies = [
     texture: `${TEX}/marsmap1k.jpg`,
     bumpTexture: `${TEX}/marsbump1k.jpg`,
     surfaceStyle: 'red-dust',
-    description:
-      'Permukaan Mars dipenuhi debu oksida besi yang memberi warna kemerahan khas. Planet ini menyimpan gunung berapi terbesar di Tata Surya, Olympus Mons, dan bukti aliran air purba di masa lalu.',
-    funFact: 'Olympus Mons di Mars tingginya sekitar 2.5 kali Gunung Everest.',
-    stats: {
-      diameter: '6,779 km',
-      radius: '3,389.5 km',
-      mass: '6.417 × 10²³ kg',
-      volume: '1.631 × 10¹¹ km³',
-      gravity: '3.72 m/s²',
-      temperature: '-153°C hingga 20°C',
-      atmosphere: '95% CO₂, tipis (0.6% tekanan Bumi)',
-      rotation: '24.6 jam',
-      revolution: '687 hari Bumi',
-      distanceFromSun: '227.9 juta km',
-      moons: '2 (Phobos, Deimos)',
-      structure: 'Inti besi-belerang, mantel silikat, kerak tebal',
-      phenomena: 'Badai debu global, Olympus Mons, Valles Marineris',
-    },
-    missions: ['Viking 1 (1976)', 'Curiosity Rover (2012)', 'Perseverance (2021)'],
-    timeline: [
-      { year: '1976', event: 'Viking 1 menjadi wahana pertama mendarat sukses di Mars.' },
-      { year: '2021', event: 'Helikopter Ingenuity melakukan penerbangan pertama di planet lain.' },
-    ],
-    uniqueFacts: ['Punya ngarai raksasa, Valles Marineris, sepanjang ~4,000 km.', 'Kandidat utama misi berawak manusia berikutnya.'],
   },
   {
     id: 'jupiter',
     order: 5,
-    name: 'Jupiter',
-    subtitle: 'Raksasa gas terbesar',
     color: '#d8ae82',
     renderScale: 1.5,
     orbitRadius: 23,
@@ -259,36 +99,10 @@ export const bodies = [
     axialTilt: 3.13,
     texture: `${TEX}/jupitermap.jpg`,
     surfaceStyle: 'great-red-spot',
-    description:
-      'Planet terbesar di Tata Surya ini adalah raksasa gas dengan pita awan badai raksasa. Great Red Spot-nya adalah badai antisiklon yang telah berlangsung selama ratusan tahun, cukup besar untuk menelan Bumi.',
-    funFact: 'Jupiter memiliki medan magnet terkuat di antara semua planet, 20,000 kali lebih kuat dari Bumi.',
-    stats: {
-      diameter: '139,820 km',
-      radius: '69,911 km',
-      mass: '1.898 × 10²⁷ kg',
-      volume: '1.431 × 10¹⁵ km³',
-      gravity: '24.79 m/s²',
-      temperature: '~-108°C (puncak awan)',
-      atmosphere: '90% hidrogen, 10% helium',
-      rotation: '9.9 jam (tercepat di Tata Surya)',
-      revolution: '11.86 tahun Bumi',
-      distanceFromSun: '778.5 juta km',
-      moons: '95 diketahui (termasuk 4 bulan Galilean)',
-      structure: 'Kemungkinan inti padat, mantel hidrogen metalik cair',
-      phenomena: 'Great Red Spot, aurora kuat, badai pita awan',
-    },
-    missions: ['Pioneer 10 (1973)', 'Galileo (1995)', 'Juno (2016)'],
-    timeline: [
-      { year: '1610', event: 'Galileo menemukan empat bulan terbesar Jupiter (Io, Europa, Ganymede, Callisto).' },
-      { year: '2016', event: 'Wahana Juno tiba untuk mempelajari inti dan medan magnet Jupiter.' },
-    ],
-    uniqueFacts: ['Ganymede, bulannya, lebih besar dari planet Merkurius.', 'Bertindak sebagai "penyedot debu kosmik" yang melindungi Bumi dari komet.'],
   },
   {
     id: 'saturn',
     order: 6,
-    name: 'Saturnus',
-    subtitle: 'Planet bercincin',
     color: '#e3c99a',
     hasRings: true,
     renderScale: 1.3,
@@ -297,33 +111,10 @@ export const bodies = [
     axialTilt: 26.73,
     texture: `${TEX}/saturnmap.jpg`,
     ringTexture: `${TEX}/saturnringcolor.jpg`,
-    description:
-      'Terkenal dengan sistem cincinnya yang megah, tersusun dari miliaran partikel es dan batu. Saturnus juga memiliki kepadatan terendah di antara semua planet — cukup rendah untuk mengapung di air jika ada lautan yang cukup besar.',
-    funFact: 'Cincin Saturnus lebarnya bisa mencapai 282,000 km namun ketebalannya hanya sekitar 10 meter di beberapa bagian.',
-    stats: {
-      diameter: '116,460 km',
-      radius: '58,232 km',
-      mass: '5.683 × 10²⁶ kg',
-      volume: '8.27 × 10¹⁴ km³',
-      gravity: '10.44 m/s²',
-      temperature: '~-139°C (puncak awan)',
-      atmosphere: '96% hidrogen, 3% helium',
-      rotation: '10.7 jam',
-      revolution: '29.4 tahun Bumi',
-      distanceFromSun: '1.43 miliar km',
-      moons: '146 diketahui (termasuk Titan)',
-      structure: 'Inti berbatu, mantel hidrogen metalik, atmosfer tebal',
-      phenomena: 'Sistem cincin kompleks, badai heksagonal di kutub utara',
-    },
-    missions: ['Pioneer 11 (1979)', 'Cassini-Huygens (2004)'],
-    timeline: [{ year: '2004', event: 'Cassini tiba dan menghabiskan 13 tahun mempelajari Saturnus & bulannya.' }],
-    uniqueFacts: ['Titan memiliki danau metana cair dan atmosfer tebal.', 'Kepadatannya lebih rendah dari air.'],
   },
   {
     id: 'uranus',
     order: 7,
-    name: 'Uranus',
-    subtitle: 'Raksasa es yang berotasi menyamping',
     color: '#8fd8d8',
     renderScale: 0.95,
     orbitRadius: 34,
@@ -332,33 +123,10 @@ export const bodies = [
     hasRings: true,
     texture: `${TEX}/uranusmap.jpg`,
     ringTexture: `${TEX}/uranusringcolour.jpg`,
-    description:
-      'Uranus unik karena berotasi hampir menyamping, dengan sumbu kemiringan 98 derajat — kemungkinan akibat tabrakan raksasa di masa lalu. Warna biru-hijaunya berasal dari metana di atmosfernya.',
-    funFact: 'Karena kemiringannya yang ekstrem, setiap kutub Uranus mengalami 42 tahun siang terus-menerus lalu 42 tahun malam.',
-    stats: {
-      diameter: '50,724 km',
-      radius: '25,362 km',
-      mass: '8.681 × 10²⁵ kg',
-      volume: '6.833 × 10¹³ km³',
-      gravity: '8.69 m/s²',
-      temperature: '~-197°C',
-      atmosphere: 'Hidrogen, helium, metana',
-      rotation: '17.2 jam (retrograde)',
-      revolution: '84 tahun Bumi',
-      distanceFromSun: '2.87 miliar km',
-      moons: '28 diketahui',
-      structure: 'Mantel es air, amonia, metana di sekitar inti berbatu kecil',
-      phenomena: 'Rotasi menyamping ekstrem, cincin tipis gelap',
-    },
-    missions: ['Voyager 2 (1986) — satu-satunya kunjungan dekat'],
-    timeline: [{ year: '1781', event: 'William Herschel menemukan Uranus — planet pertama yang ditemukan lewat teleskop.' }],
-    uniqueFacts: ['Planet pertama ditemukan menggunakan teleskop.', 'Memiliki 13 cincin tipis yang gelap.'],
   },
   {
     id: 'neptune',
     order: 8,
-    name: 'Neptunus',
-    subtitle: 'Raksasa es dengan badai terkencang',
     color: '#3b5fd8',
     renderScale: 0.93,
     orbitRadius: 39,
@@ -366,28 +134,12 @@ export const bodies = [
     axialTilt: 28.32,
     texture: `${TEX}/neptunemap.jpg`,
     surfaceStyle: 'blue-storm',
-    description:
-      'Planet terjauh dari Matahari ini memiliki angin tercepat di Tata Surya, mencapai 2,100 km/jam. Great Dark Spot-nya adalah badai raksasa yang pernah teramati oleh Voyager 2.',
-    funFact: 'Neptunus ditemukan lewat perhitungan matematika sebelum benar-benar diamati langsung.',
-    stats: {
-      diameter: '49,244 km',
-      radius: '24,622 km',
-      mass: '1.024 × 10²⁶ kg',
-      volume: '6.254 × 10¹³ km³',
-      gravity: '11.15 m/s²',
-      temperature: '~-201°C',
-      atmosphere: 'Hidrogen, helium, metana',
-      rotation: '16.1 jam',
-      revolution: '164.8 tahun Bumi',
-      distanceFromSun: '4.5 miliar km',
-      moons: '16 diketahui (termasuk Triton)',
-      structure: 'Mantel es air-amonia-metana di sekitar inti berbatu',
-      phenomena: 'Angin tercepat di Tata Surya, Great Dark Spot',
-    },
-    missions: ['Voyager 2 (1989) — satu-satunya kunjungan dekat'],
-    timeline: [{ year: '1846', event: 'Ditemukan berdasarkan prediksi matematis dari gangguan orbit Uranus.' }],
-    uniqueFacts: ['Bulannya, Triton, mengorbit secara retrograde dan diduga adalah objek Sabuk Kuiper yang tertangkap.'],
   },
 ];
 
-export const getBodyById = (id) => bodies.find((b) => b.id === id);
+export function getBodies(lang = 'en') {
+  const content = planetsContent[lang] || planetsContent.en;
+  return BASE_BODIES.map((base) => ({ ...base, ...content[base.id] }));
+}
+
+export const getBodyById = (id, lang = 'en') => getBodies(lang).find((b) => b.id === id);
