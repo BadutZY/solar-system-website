@@ -4,6 +4,7 @@ import Loader from './components/Loader/Loader.jsx';
 import FloatingNav from './components/FloatingNav/FloatingNav.jsx';
 import AudioToggle from './components/AudioToggle/AudioToggle.jsx';
 import LanguageToggle from './components/LanguageToggle/LanguageToggle.jsx';
+import LanguageTransition from './components/LanguageTransition/LanguageTransition.jsx';
 import Home from './pages/Home/Home.jsx';
 import SolarSystem from './pages/SolarSystem/SolarSystem.jsx';
 import Gallery from './pages/Gallery/Gallery.jsx';
@@ -29,6 +30,7 @@ export default function App() {
           </Routes>
           <AudioToggle enabled={enabled} onToggle={toggleAmbience} />
           <LanguageToggle />
+          <LanguageTransition />
         </>
       )}
     </>

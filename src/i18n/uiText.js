@@ -29,6 +29,7 @@ export const uiText = {
       toggleAria: 'Change language',
       switchToLabel: 'Bahasa Indonesia',
       current: 'English',
+      switching: 'Switching language',
     },
     home: {
       eyebrow: 'A cinematic journey',
@@ -44,6 +45,8 @@ export const uiText = {
       distanceFromSun: 'Distance from Sun',
       revolution: 'Orbital Period',
       moons: 'Moons',
+      entering: 'Charting Orbits',
+      enteringHint: 'Drag to orbit · Scroll to zoom · Tap a body to inspect',
     },
     planetSection: {
       diameter: 'Diameter',
@@ -116,6 +119,7 @@ export const uiText = {
       toggleAria: 'Ubah bahasa',
       switchToLabel: 'English',
       current: 'Bahasa Indonesia',
+      switching: 'Mengubah bahasa',
     },
     home: {
       eyebrow: 'Sebuah perjalanan sinematik',
@@ -131,6 +135,8 @@ export const uiText = {
       distanceFromSun: 'Jarak dari Matahari',
       revolution: 'Revolusi',
       moons: 'Satelit',
+      entering: 'Memetakan Orbit',
+      enteringHint: 'Geser untuk memutar · Gulir untuk zoom · Ketuk objek untuk detail',
     },
     planetSection: {
       diameter: 'Diameter',

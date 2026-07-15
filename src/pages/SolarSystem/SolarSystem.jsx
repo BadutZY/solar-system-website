@@ -8,7 +8,33 @@ import { getBodies } from '../../data/planets.js';
 import { useLanguage } from '../../i18n/LanguageContext.jsx';
 import './solarSystem.css';
 
-function OrbitRing({ radius }) {
+// --- Entrance-animation easing helpers -------------------------------
+// Every body (sun, planets, moons, orbit rings) "spawns" a short delay
+// after mount instead of just popping in fully formed. spawnScale uses a
+// slight overshoot (easeOutBack) so bodies feel like they pop into
+// place; spawnFade is a plain ease-out used for things that should just
+// fade in without bouncing, like orbit ring opacity.
+function easeOutCubic(x) {
+  return 1 - Math.pow(1 - x, 3);
+}
+
+function easeOutBack(x) {
+  const c1 = 1.70158;
+  const c3 = c1 + 1;
+  return 1 + c3 * Math.pow(x - 1, 3) + c1 * Math.pow(x - 1, 2);
+}
+
+function spawnScale(elapsed, delay, duration = 0.8) {
+  if (elapsed <= delay) return 0;
+  return Math.max(0, easeOutBack(Math.min(1, (elapsed - delay) / duration)));
+}
+
+function spawnFade(elapsed, delay, duration = 0.8) {
+  if (elapsed <= delay) return 0;
+  return easeOutCubic(Math.min(1, (elapsed - delay) / duration));
+}
+
+function OrbitRing({ radius, appearDelay = 0 }) {
   const points = useMemo(() => {
     const pts = [];
     for (let i = 0; i <= 128; i++) {
@@ -18,26 +44,41 @@ function OrbitRing({ radius }) {
     return pts;
   }, [radius]);
   const geometry = useMemo(() => new THREE.BufferGeometry().setFromPoints(points), [points]);
+  const matRef = useRef();
+
+  useFrame((state) => {
+    if (matRef.current) {
+      matRef.current.opacity = 0.45 * spawnFade(state.clock.elapsedTime, appearDelay, 0.9);
+    }
+  });
+
   return (
     <line>
       <primitive object={geometry} attach="geometry" />
-      <lineBasicMaterial color="#4a5578" transparent opacity={0.45} />
+      <lineBasicMaterial ref={matRef} color="#4a5578" transparent opacity={0} />
     </line>
   );
 }
 
-function Sun({ body, onSelect, selected }) {
+function Sun({ body, onSelect, selected, appearDelay = 0 }) {
   const map = useLoader(THREE.TextureLoader, body.texture);
   const ref = useRef();
+  const glowRef = useRef();
   const [hovered, setHovered] = useState(false);
-  useFrame((_, dt) => {
+
+  useFrame((state, dt) => {
     if (ref.current) ref.current.rotation.y += dt * 0.05;
+    const spawn = spawnScale(state.clock.elapsedTime, appearDelay, 1.0);
+    const hoverScale = hovered || selected?.id === body.id ? 1.06 : 1;
+    if (ref.current) ref.current.scale.setScalar(hoverScale * spawn);
+    if (glowRef.current) glowRef.current.scale.setScalar(spawn);
   });
+
   return (
     <group>
       <mesh
         ref={ref}
-        scale={hovered || selected?.id === body.id ? 1.06 : 1}
+        scale={0}
         onClick={(e) => {
           e.stopPropagation();
           onSelect(body);
@@ -56,7 +97,7 @@ function Sun({ body, onSelect, selected }) {
         <meshBasicMaterial map={map} />
       </mesh>
       <pointLight position={[0, 0, 0]} intensity={3} distance={200} decay={0.5} color="#ffe1a8" />
-      <mesh>
+      <mesh ref={glowRef} scale={0}>
         <sphereGeometry args={[3.1, 32, 32]} />
         <meshBasicMaterial color="#ffb14a" transparent opacity={0.08} />
       </mesh>
@@ -64,29 +105,35 @@ function Sun({ body, onSelect, selected }) {
   );
 }
 
-function OrbitingBody({ body, onSelect, selected, children }) {
+function OrbitingBody({ body, onSelect, selected, appearDelay = 0, children }) {
   const map = useLoader(THREE.TextureLoader, body.texture);
   const ring = body.hasRings && body.ringTexture ? useLoader(THREE.TextureLoader, body.ringTexture) : null;
   const groupRef = useRef();
   const meshRef = useRef();
+  const ringRef = useRef();
   const angle = useRef(Math.random() * Math.PI * 2);
   const [hovered, setHovered] = useState(false);
   const visualRadius = Math.max(0.3, body.renderScale * 0.75);
 
-  useFrame((_, dt) => {
+  useFrame((state, dt) => {
     angle.current += dt * body.orbitSpeed * 0.12;
     if (groupRef.current) {
       groupRef.current.position.x = Math.cos(angle.current) * body.orbitRadius;
       groupRef.current.position.z = Math.sin(angle.current) * body.orbitRadius;
     }
     if (meshRef.current) meshRef.current.rotation.y += dt * 0.3;
+
+    const spawn = spawnScale(state.clock.elapsedTime, appearDelay, 0.85);
+    const hoverScale = hovered || selected?.id === body.id ? 1.18 : 1;
+    if (meshRef.current) meshRef.current.scale.setScalar(hoverScale * spawn);
+    if (ringRef.current) ringRef.current.scale.setScalar(spawn);
   });
 
   return (
     <group ref={groupRef}>
       <mesh
         ref={meshRef}
-        scale={hovered || selected?.id === body.id ? 1.18 : 1}
+        scale={0}
         onClick={(e) => {
           e.stopPropagation();
           onSelect(body);
@@ -105,7 +152,7 @@ function OrbitingBody({ body, onSelect, selected, children }) {
         <meshStandardMaterial map={map} roughness={0.9} metalness={0.05} />
       </mesh>
       {ring && (
-        <mesh rotation={[Math.PI / 2 - 0.4, 0, 0]}>
+        <mesh ref={ringRef} scale={0} rotation={[Math.PI / 2 - 0.4, 0, 0]}>
           <ringGeometry args={[visualRadius * 1.4, visualRadius * 2.2, 96]} />
           <meshBasicMaterial map={ring} side={THREE.DoubleSide} transparent opacity={0.9} />
         </mesh>
@@ -119,7 +166,7 @@ function OrbitingBody({ body, onSelect, selected, children }) {
 // the parent's own <group>, so it automatically rides along with the
 // planet's orbit around the Sun while circling the planet on its own,
 // much smaller, faster loop — exactly like the Moon around Earth.
-function SatelliteBody({ body, onSelect, selected }) {
+function SatelliteBody({ body, onSelect, selected, appearDelay = 0 }) {
   const map = useLoader(THREE.TextureLoader, body.texture);
   const bump = body.bumpTexture ? useLoader(THREE.TextureLoader, body.bumpTexture) : null;
   const groupRef = useRef();
@@ -128,20 +175,24 @@ function SatelliteBody({ body, onSelect, selected }) {
   const [hovered, setHovered] = useState(false);
   const visualRadius = Math.max(0.12, body.renderScale * 0.75);
 
-  useFrame((_, dt) => {
+  useFrame((state, dt) => {
     angle.current += dt * body.orbitSpeed * 0.12;
     if (groupRef.current) {
       groupRef.current.position.x = Math.cos(angle.current) * body.orbitRadius;
       groupRef.current.position.z = Math.sin(angle.current) * body.orbitRadius;
     }
     if (meshRef.current) meshRef.current.rotation.y += dt * 0.25;
+
+    const spawn = spawnScale(state.clock.elapsedTime, appearDelay, 0.7);
+    const hoverScale = hovered || selected?.id === body.id ? 1.3 : 1;
+    if (meshRef.current) meshRef.current.scale.setScalar(hoverScale * spawn);
   });
 
   return (
     <group ref={groupRef}>
       <mesh
         ref={meshRef}
-        scale={hovered || selected?.id === body.id ? 1.3 : 1}
+        scale={0}
         onClick={(e) => {
           e.stopPropagation();
           onSelect(body);
@@ -171,10 +222,12 @@ export default function SolarSystem() {
     [bodies]
   );
   const [selected, setSelected] = useState(null);
+
   useEffect(() => {
     setSelected((prev) => (prev ? bodies.find((b) => b.id === prev.id) ?? null : prev));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [bodies]);
+
   const sun = bodies.find((b) => b.isStar);
   const planets = REAL_BODIES.filter((b) => !b.isStar);
   const satellites = bodies.filter((b) => b.isSatellite);
@@ -186,15 +239,25 @@ export default function SolarSystem() {
         <Suspense fallback={null}>
           <CosmicBackground />
           <directionalLight position={[0, 10, 0]} intensity={0.4} />
-          <Sun body={sun} onSelect={setSelected} selected={selected} />
-          {planets.map((body) => (
+          <Sun body={sun} onSelect={setSelected} selected={selected} appearDelay={0.15} />
+          {planets.map((body, index) => (
             <group key={body.id}>
-              <OrbitRing radius={body.orbitRadius} />
-              <OrbitingBody body={body} onSelect={setSelected} selected={selected}>
-                {satelliteOf(body.id).map((moon) => (
+              <OrbitRing radius={body.orbitRadius} appearDelay={0.35 + index * 0.1} />
+              <OrbitingBody
+                body={body}
+                onSelect={setSelected}
+                selected={selected}
+                appearDelay={0.45 + index * 0.1}
+              >
+                {satelliteOf(body.id).map((moon, moonIndex) => (
                   <group key={moon.id}>
-                    <OrbitRing radius={moon.orbitRadius} />
-                    <SatelliteBody body={moon} onSelect={setSelected} selected={selected} />
+                    <OrbitRing radius={moon.orbitRadius} appearDelay={0.9 + index * 0.1 + moonIndex * 0.08} />
+                    <SatelliteBody
+                      body={moon}
+                      onSelect={setSelected}
+                      selected={selected}
+                      appearDelay={1.0 + index * 0.1 + moonIndex * 0.08}
+                    />
                   </group>
                 ))}
               </OrbitingBody>
