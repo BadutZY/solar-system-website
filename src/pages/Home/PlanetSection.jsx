@@ -1,37 +1,50 @@
-import { useRef, useState } from 'react';
-import { AnimatePresence, motion, useScroll, useSpring, useTransform, useReducedMotion } from 'framer-motion';
+import { useEffect, useRef, useState } from 'react';
+import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { useLanguage } from '../../i18n/LanguageContext.jsx';
 
 const STAT_KEYS = ['diameter', 'mass', 'gravity', 'temperature', 'distanceFromSun', 'rotation', 'revolution', 'moons'];
+
+// How much of the section needs to be inside the scroll container's
+// viewport before its info panel is considered "active" and fades in.
+const ACTIVE_THRESHOLD = 0.55;
 
 export default function PlanetSection({ body, index, total, scrollContainerRef }) {
   const { t } = useLanguage();
   const ref = useRef(null);
   const reduced = !!useReducedMotion();
-  const { scrollYProgress } = useScroll({
-    target: ref,
-    container: scrollContainerRef,
-    offset: ['start end', 'end start'],
-  });
 
-  // Raw scrollYProgress snaps instantly to wherever the scroll-snap engine
-  // lands, which reads as an abrupt cut. Passing it through a spring gives
-  // the panel real time-based inertia for its fade in/out.
+  // The panel's visibility used to be driven by framer-motion's
+  // scroll-linked `useScroll`/`useTransform`, computed from precise pixel
+  // offsets inside the custom scroll container. That math depends on the
+  // container being fully measured at the moment the hook first runs — in
+  // local dev, React's <StrictMode> happens to invoke effects twice, which
+  // masked a timing race where the very first measurement could be taken
+  // a beat too early. Production builds only run effects once, so that
+  // stale measurement stuck around and the panel's opacity never left 0 —
+  // it rendered, but stayed invisible.
   //
-  // NOTE: the panel intentionally does NOT move vertically with scroll —
-  // it stays locked in the same spot at all times. An earlier version also
-  // translated it up/down (a "parallax" slide), but that read as an
-  // unwanted bob/jitter, especially on mobile where the panel is docked to
-  // the bottom of the screen. Only opacity animates now.
-  const opacitySpring = useSpring(scrollYProgress, {
-    stiffness: 18,
-    damping: 22,
-    mass: 1.4,
-    restDelta: 0.001,
-  });
-  const opacityProgress = reduced ? scrollYProgress : opacitySpring;
+  // IntersectionObserver sidesteps that entirely: it doesn't do any manual
+  // scroll-position math, it just reports whether the section is on
+  // screen, and it behaves identically in dev and in a production build.
+  const [isActive, setIsActive] = useState(false);
 
-  const opacityInfo = useTransform(opacityProgress, [0, 0.32, 0.68, 1], [0, 1, 1, 0]);
+  useEffect(() => {
+    const node = ref.current;
+    if (!node) return undefined;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        setIsActive(entry.isIntersecting && entry.intersectionRatio >= ACTIVE_THRESHOLD);
+      },
+      {
+        root: scrollContainerRef?.current ?? null,
+        threshold: [0, ACTIVE_THRESHOLD, 1],
+      }
+    );
+
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, [scrollContainerRef]);
 
   // Alternates left/right — MUST match sideSignForIndex() in HomeCanvas.jsx
   // so the camera always frames the planet into whichever half is empty.
@@ -43,7 +56,10 @@ export default function PlanetSection({ body, index, total, scrollContainerRef }
     <section id={body.id} ref={ref} className={`vg-planet-section side-${side}`}>
       <motion.div
         className="vg-planet-panel"
-        style={{ opacity: opacityInfo }}
+        initial={false}
+        animate={{ opacity: isActive ? 1 : 0 }}
+        transition={{ duration: reduced ? 0 : 0.5, ease: [0.16, 1, 0.3, 1] }}
+        style={{ pointerEvents: isActive ? 'auto' : 'none' }}
       >
         <span className="vg-planet-index mono">
           {String(index + 1).padStart(2, '0')} / {String(total).padStart(2, '0')}
