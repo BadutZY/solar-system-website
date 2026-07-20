@@ -4,10 +4,6 @@ import { uiText } from './uiText.js';
 const STORAGE_KEY = 'vg-language';
 const DEFAULT_LANGUAGE = 'en';
 
-// How long the transition curtain stays covering the screen before the
-// language actually swaps underneath it, and how long it lingers after
-// the swap before revealing the new copy. Tuned to feel snappy but still
-// long enough to fully hide the text/layout jump.
 const COVER_MS = 320;
 const REVEAL_MS = 420;
 
@@ -39,7 +35,6 @@ export function LanguageProvider({ children }) {
     try {
       window.localStorage.setItem(STORAGE_KEY, language);
     } catch {
-      // ignore storage errors (private mode, etc.)
     }
     if (typeof document !== 'undefined') {
       document.documentElement.lang = language;
@@ -49,8 +44,6 @@ export function LanguageProvider({ children }) {
     }
   }, [language]);
 
-  // Clear any in-flight timers on unmount so we never call setState after
-  // the provider is gone.
   useEffect(() => {
     return () => {
       window.clearTimeout(coverTimeout.current);
@@ -65,15 +58,11 @@ export function LanguageProvider({ children }) {
     window.clearTimeout(coverTimeout.current);
     window.clearTimeout(revealTimeout.current);
 
-    // 1) Show the curtain immediately.
     setIsTransitioning(true);
 
-    // 2) Once it's fully covering the screen, swap the actual copy —
-    //    this is the moment the "jump" happens, but it's hidden.
     coverTimeout.current = window.setTimeout(() => {
       setLanguageState(nextLang);
 
-      // 3) Let the new copy settle for a beat, then lift the curtain.
       revealTimeout.current = window.setTimeout(() => {
         setIsTransitioning(false);
       }, REVEAL_MS);
@@ -94,7 +83,6 @@ export function LanguageProvider({ children }) {
       return node ?? path;
     };
     return { language, isTransitioning, toggleLanguage, setLanguage, t };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [language, isTransitioning]);
 
   return <LanguageContext.Provider value={value}>{children}</LanguageContext.Provider>;

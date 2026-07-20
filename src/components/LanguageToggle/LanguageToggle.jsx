@@ -1,11 +1,6 @@
 import { useLanguage } from '../../i18n/LanguageContext.jsx';
 import './languageToggle.css';
 
-// Two-glyph "translate" mark drawn in the same spirit as the familiar
-// Google Translate icon: a serif CJK character and a bold Latin "A",
-// offset and colored differently, standing for "translate between
-// languages". Drawn from scratch as plain SVG shapes/text, not a
-// copied asset.
 function TranslateIcon() {
   return (
     <svg viewBox="0 0 36 36" width="20" height="20" aria-hidden="true">

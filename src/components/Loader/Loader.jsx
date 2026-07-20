@@ -15,7 +15,6 @@ export default function Loader({ onDone }) {
 
     const tick = (now) => {
       const t = Math.min(1, (now - start) / DURATION);
-      // ease-out cubic for a satisfying deceleration near 100%
       const eased = 1 - Math.pow(1 - t, 3);
       setProgress(Math.round(eased * 100));
       if (t < 1) {

@@ -6,11 +6,8 @@ import { getBodies } from '../../data/planets.js';
 import { useLanguage } from '../../i18n/LanguageContext.jsx';
 import './home.css';
 
-const TOTAL_SECTIONS_OFFSET = 1; // hero occupies section index 0
+const TOTAL_SECTIONS_OFFSET = 1;
 
-// Keep this snappy and responsive — ease-OUT (not ease-in-out) so movement
-// starts at full speed immediately with zero perceived lead-in delay, and
-// only eases off gently right at the end.
 const SCROLL_DURATION = 340;
 const easeOutCubic = (t) => 1 - (1 - t) ** 3;
 

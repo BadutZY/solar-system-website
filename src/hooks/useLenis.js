@@ -1,9 +1,6 @@
 import { useEffect } from 'react';
 import Lenis from 'lenis';
 
-// Smooth-scroll hook for pages that use free, continuous scrolling
-// (Solar System, Gallery, About). Home uses native CSS scroll-snap
-// instead, so it intentionally does NOT use this hook.
 export default function useLenis({ enabled = true } = {}) {
   useEffect(() => {
     if (!enabled) return undefined;

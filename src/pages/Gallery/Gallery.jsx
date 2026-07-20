@@ -16,7 +16,6 @@ export default function Gallery() {
 
   useEffect(() => {
     setActive((prev) => (prev ? galleryItems.find((it) => it.id === prev.id) ?? null : prev));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [galleryItems]);
 
   const items = useMemo(

@@ -8,12 +8,6 @@ import { getBodies } from '../../data/planets.js';
 import { useLanguage } from '../../i18n/LanguageContext.jsx';
 import './solarSystem.css';
 
-// --- Entrance-animation easing helpers -------------------------------
-// Every body (sun, planets, moons, orbit rings) "spawns" a short delay
-// after mount instead of just popping in fully formed. spawnScale uses a
-// slight overshoot (easeOutBack) so bodies feel like they pop into
-// place; spawnFade is a plain ease-out used for things that should just
-// fade in without bouncing, like orbit ring opacity.
 function easeOutCubic(x) {
   return 1 - Math.pow(1 - x, 3);
 }
@@ -162,10 +156,6 @@ function OrbitingBody({ body, onSelect, selected, appearDelay = 0, children }) {
   );
 }
 
-// Orbits its parent planet's local origin rather than the Sun. Nested inside
-// the parent's own <group>, so it automatically rides along with the
-// planet's orbit around the Sun while circling the planet on its own,
-// much smaller, faster loop — exactly like the Moon around Earth.
 function SatelliteBody({ body, onSelect, selected, appearDelay = 0 }) {
   const map = useLoader(THREE.TextureLoader, body.texture);
   const bump = body.bumpTexture ? useLoader(THREE.TextureLoader, body.bumpTexture) : null;

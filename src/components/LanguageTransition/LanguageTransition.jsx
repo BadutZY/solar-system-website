@@ -2,10 +2,6 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { useLanguage } from '../../i18n/LanguageContext.jsx';
 import './languageTransition.css';
 
-// A short full-screen "curtain" that plays whenever the language changes.
-// It covers the screen, the actual copy swaps underneath it (see
-// LanguageContext), then it lifts again — so the user never sees text,
-// widths, and layout jump around mid-transition.
 export default function LanguageTransition() {
   const { isTransitioning, language, t } = useLanguage();
 

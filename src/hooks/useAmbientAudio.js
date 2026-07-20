@@ -1,15 +1,5 @@
 import { useCallback, useRef, useState } from 'react';
 
-// Lightweight ambient-space audio engine built on the Web Audio API.
-// This project has no bundled audio files (no network access at build
-// time to fetch NASA/ambient mp3s), so the ambience is synthesized:
-// two slow detuned oscillators + filtered noise stand in for a drone,
-// and short sine blips stand in for UI click/whoosh sounds.
-//
-// TO USE REAL AUDIO LATER: drop files into public/audio/ (e.g.
-// ambience.mp3, click.mp3) and replace the bodies of playClick /
-// toggleAmbience with a plain <audio src="/audio/click.mp3" /> play().
-
 export default function useAmbientAudio() {
   const ctxRef = useRef(null);
   const nodesRef = useRef(null);

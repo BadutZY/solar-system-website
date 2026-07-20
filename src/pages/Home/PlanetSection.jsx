@@ -4,8 +4,6 @@ import { useLanguage } from '../../i18n/LanguageContext.jsx';
 
 const STAT_KEYS = ['diameter', 'mass', 'gravity', 'temperature', 'distanceFromSun', 'rotation', 'revolution', 'moons'];
 
-// How much of the section needs to be inside the scroll container's
-// viewport before its info panel is considered "active" and fades in.
 const ACTIVE_THRESHOLD = 0.55;
 
 export default function PlanetSection({ body, index, total, scrollContainerRef }) {
@@ -13,19 +11,6 @@ export default function PlanetSection({ body, index, total, scrollContainerRef }
   const ref = useRef(null);
   const reduced = !!useReducedMotion();
 
-  // The panel's visibility used to be driven by framer-motion's
-  // scroll-linked `useScroll`/`useTransform`, computed from precise pixel
-  // offsets inside the custom scroll container. That math depends on the
-  // container being fully measured at the moment the hook first runs — in
-  // local dev, React's <StrictMode> happens to invoke effects twice, which
-  // masked a timing race where the very first measurement could be taken
-  // a beat too early. Production builds only run effects once, so that
-  // stale measurement stuck around and the panel's opacity never left 0 —
-  // it rendered, but stayed invisible.
-  //
-  // IntersectionObserver sidesteps that entirely: it doesn't do any manual
-  // scroll-position math, it just reports whether the section is on
-  // screen, and it behaves identically in dev and in a production build.
   const [isActive, setIsActive] = useState(false);
 
   useEffect(() => {
@@ -46,8 +31,6 @@ export default function PlanetSection({ body, index, total, scrollContainerRef }
     return () => observer.disconnect();
   }, [scrollContainerRef]);
 
-  // Alternates left/right — MUST match sideSignForIndex() in HomeCanvas.jsx
-  // so the camera always frames the planet into whichever half is empty.
   const side = index % 2 === 0 ? 'left' : 'right';
 
   const [moreOpen, setMoreOpen] = useState(false);

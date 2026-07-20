@@ -4,7 +4,6 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { useLanguage } from '../../i18n/LanguageContext.jsx';
 import './floatingNav.css';
 
-// Minimal stroke-style icons, drawn inline so no icon library is required.
 const ICONS = {
   home: (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
