@@ -33,8 +33,6 @@ function animateScrollTo(el, targetTop, duration, onDone) {
   return () => cancelAnimationFrame(rafId);
 }
 
-const MOBILE_QUERY = '(max-width: 860px)';
-
 export default function Home() {
   const { language, t } = useLanguage();
   const bodies = useMemo(() => getBodies(language), [language]);
@@ -44,19 +42,10 @@ export default function Home() {
   const wheelLockRef = useRef(false);
   const cancelAnimRef = useRef(null);
 
-  // Drives the 3D camera framing: on mobile the planet needs to stay
-  // centered in the open top strip above the description panel, instead of
-  // being pushed left/right like on desktop (see HomeCanvas.jsx).
-  const [isMobile, setIsMobile] = useState(
-    () => typeof window !== 'undefined' && window.matchMedia(MOBILE_QUERY).matches,
-  );
-
-  useEffect(() => {
-    const mql = window.matchMedia(MOBILE_QUERY);
-    const onChange = (e) => setIsMobile(e.matches);
-    mql.addEventListener('change', onChange);
-    return () => mql.removeEventListener('change', onChange);
-  }, []);
+  // NOTE: whether the 3D camera should use the mobile (centered) or
+  // desktop (offset left/right) framing is decided inside HomeCanvas
+  // itself, from the actual <canvas> render size — not here. See the
+  // comment above MOBILE_BREAKPOINT in HomeCanvas.jsx for why.
 
   useEffect(() => {
     const el = containerRef.current;
@@ -137,7 +126,7 @@ export default function Home() {
   return (
     <div className="vg-home">
       <div className="vg-home-canvas">
-        <HomeCanvas progressRef={progressRef} isMobile={isMobile} />
+        <HomeCanvas progressRef={progressRef} />
       </div>
 
       <div id="scroll-root" ref={containerRef} className="vg-home-scroll">

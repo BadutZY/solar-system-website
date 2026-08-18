@@ -1,5 +1,5 @@
 import { Suspense, useMemo, useRef } from 'react';
-import { Canvas, useFrame } from '@react-three/fiber';
+import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import * as THREE from 'three';
 import CosmicBackground from './CosmicBackground.jsx';
 import TexturedPlanet from './TexturedPlanet.jsx';
@@ -25,6 +25,19 @@ const MOBILE_VERTICAL_LIFT = 2.4;
 const MOBILE_CAM_OFFSET = new THREE.Vector3(0, 2.1, 10.5);
 const DESKTOP_CAM_OFFSET = new THREE.Vector3(2.2, 1.4, 7.5);
 
+// Same breakpoint as the CSS (`@media (max-width: 860px)` in home.css).
+// IMPORTANT: this is intentionally read from the actual <canvas> render
+// size (via useThree, below) instead of `window.matchMedia` / a React
+// prop computed outside the canvas. On real mobile devices the browser
+// chrome (address bar show/hide, dynamic viewport units, resize timing)
+// can make `window.innerWidth`/matchMedia briefly disagree with the
+// canvas's real size, which used to leave the camera on the "desktop"
+// framing path — pushing the planet off to the side — even though the
+// CSS layout had already switched to the mobile, bottom-panel layout.
+// Reading the canvas's own size guarantees the 3D framing always agrees
+// with what is actually on screen.
+const MOBILE_BREAKPOINT = 860;
+
 function planetWorldPositions() {
   return bodies.map((b, i) => new THREE.Vector3(i * SPACING, Math.sin(i * 1.3) * 1.2, Math.cos(i * 0.7) * 3));
 }
@@ -37,12 +50,15 @@ function sideSignForIndex(i) {
   return i % 2 === 0 ? -1 : 1;
 }
 
-function CameraRig({ progressRef, isMobile }) {
+function CameraRig({ progressRef }) {
   const positions = useMemo(planetWorldPositions, []);
   const lookTarget = useRef(new THREE.Vector3());
   const rightVec = useRef(new THREE.Vector3(1, 0, 0));
 
-  useFrame(({ camera }) => {
+  useFrame(({ camera, size }) => {
+    // Derived every frame from the canvas's real, current size — always
+    // in lockstep with the CSS breakpoint that decides the panel layout.
+    const isMobile = size.width <= MOBILE_BREAKPOINT;
     const n = bodies.length;
     const t = THREE.MathUtils.clamp(progressRef.current.value, 0, 1) * (n - 1);
     const i = Math.floor(t);
@@ -108,19 +124,45 @@ function PlanetTrail() {
   );
 }
 
-export default function HomeCanvas({ progressRef, isMobile = false }) {
+// Extra safety net for real mobile browsers: `ResizeObserver` (which r3f
+// uses internally to size the canvas) can occasionally miss the resize
+// that happens when the address bar animates in/out, or fire once with a
+// stale value right at page load before the browser chrome has settled.
+// `visualViewport` is the one API mobile browsers keep accurate through
+// all of that, so we mirror its width/height into the canvas directly as
+// a fallback whenever it disagrees with what r3f currently has.
+function ForceViewportSync() {
+  const { size, setSize, gl } = useThree();
+
+  useFrame(() => {
+    const vv = window.visualViewport;
+    const w = Math.round(vv ? vv.width : window.innerWidth);
+    const h = Math.round(vv ? vv.height : window.innerHeight);
+    if (Math.abs(size.width - w) > 1 || Math.abs(size.height - h) > 1) {
+      setSize(w, h);
+      gl.setSize(w, h);
+    }
+  });
+
+  return null;
+}
+
+export default function HomeCanvas({ progressRef }) {
   return (
     <Canvas
       shadows
       dpr={[1, 1.8]}
       gl={{ antialias: true, powerPreference: 'high-performance' }}
       camera={{ fov: 45, near: 0.1, far: 500, position: [2, 1.4, 7.5] }}
+      resize={{ scroll: false, debounce: { scroll: 0, resize: 0 } }}
+      style={{ width: '100%', height: '100%' }}
     >
       <Suspense fallback={null}>
         <CosmicBackground />
         <directionalLight position={[10, 8, 5]} intensity={0.6} color="#ffe9c7" />
         <PlanetTrail />
-        <CameraRig progressRef={progressRef} isMobile={isMobile} />
+        <CameraRig progressRef={progressRef} />
+        <ForceViewportSync />
       </Suspense>
     </Canvas>
   );
