@@ -1,6 +1,3 @@
-// Central dictionary for every static UI string in the app.
-// Add a new language by adding a new top-level key with the same shape.
-
 export const uiText = {
   en: {
     meta: {
