@@ -1,5 +1,3 @@
-// Translatable text for every gallery item, keyed by language then id.
-
 export const galleryContent = {
   en: {
     matahari: {

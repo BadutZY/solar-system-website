@@ -1,11 +1,3 @@
-// Data for the Gallery page.
-// Each item represents one photo in public/gallery/. To add a new
-// photo: drop the image file into public/gallery/, then add one new
-// entry to BASE_ITEMS below plus matching text in ./galleryContent.js.
-//
-// Category keys are canonical (language-neutral) and map to translated
-// labels via uiText.gallery.categories in ../i18n/uiText.js.
-
 import { galleryContent } from './galleryContent.js';
 
 const BASE_ITEMS = [

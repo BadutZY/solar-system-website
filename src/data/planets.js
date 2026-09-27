@@ -1,14 +1,3 @@
-// Central content model for every stop on the Voyager journey.
-// Physical/structural data below is language-neutral (orbits, scale,
-// textures, colors). All translatable text (names, descriptions, stats
-// copy, mission notes, etc.) lives in ./planetsContent.js, keyed by
-// language and then by body id. Use getBodies(lang) to get the same
-// shape the rest of the app expects, merged for the requested language.
-//
-// Real texture maps are loaded at runtime from a public CDN mirror
-// (jsdelivr -> GitHub) of the open-source jeromeetienne/threex.planets
-// asset set. No binary assets are bundled in this repo; the browser
-// fetches them directly when the app runs.
 import { planetsContent } from './planetsContent.js';
 
 export const TEX = 'https://cdn.jsdelivr.net/gh/jeromeetienne/threex.planets@master/images';

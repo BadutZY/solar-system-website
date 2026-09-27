@@ -42,11 +42,6 @@ export default function Home() {
   const wheelLockRef = useRef(false);
   const cancelAnimRef = useRef(null);
 
-  // NOTE: whether the 3D camera should use the mobile (centered) or
-  // desktop (offset left/right) framing is decided inside HomeCanvas
-  // itself, from the actual <canvas> render size — not here. See the
-  // comment above MOBILE_BREAKPOINT in HomeCanvas.jsx for why.
-
   useEffect(() => {
     const el = containerRef.current;
     if (!el) return undefined;
@@ -56,7 +51,7 @@ export default function Home() {
       if (raf) return;
       raf = requestAnimationFrame(() => {
         const vh = window.innerHeight;
-        const sectionIndex = el.scrollTop / vh; // 0 = hero, 1..N = bodies
+        const sectionIndex = el.scrollTop / vh;
         const bodyProgress = Math.min(1, Math.max(0, (sectionIndex - 1) / (bodies.length - 1)));
         progressRef.current.value = bodyProgress;
         const idx = Math.round(bodyProgress * (bodies.length - 1));
@@ -69,9 +64,6 @@ export default function Home() {
     return () => el.removeEventListener('scroll', onScroll);
   }, []);
 
-  // Absolute section index: 0 = hero, 1..bodies.length = each planet section.
-  // Shared by the dot-nav, the hero button, and wheel scrolling below, so
-  // every input method animates identically at the same, slower pace.
   const goToSection = (sectionIndex) => {
     const el = containerRef.current;
     if (!el) return;
@@ -87,24 +79,11 @@ export default function Home() {
 
   const scrollToBody = (index) => goToSection(index + TOTAL_SECTIONS_OFFSET);
 
-  // Native wheel scrolling fights with `scroll-snap-type: y mandatory` —
-  // the browser applies a bit of free scroll, then snap-corrects, which
-  // reads as a stutter. Instead we take over wheel input entirely and
-  // drive it through the exact same eased animation as the dot-nav, one
-  // section per gesture, so both feel identical. CSS scroll-snap stays in
-  // place as a fallback for touch/keyboard/scrollbar interaction.
   useEffect(() => {
     const el = containerRef.current;
     if (!el) return undefined;
 
     const onWheel = (e) => {
-      // While the cursor is anywhere over the info panel, scrolling stays
-      // fully contained to the panel — the page/section never changes,
-      // even if the panel is already at the top or bottom of its own
-      // content. It only goes back to changing planets once the cursor
-      // leaves the panel. `overscroll-behavior: contain` on the panel
-      // (see home.css) stops the browser from chaining leftover scroll
-      // to the page once the panel itself is maxed out.
       if (e.target.closest('.vg-planet-panel')) return;
 
       e.preventDefault();

@@ -1,7 +1,3 @@
-// Translatable text for every body in the Solar System journey, keyed
-// by language then by body id. Merged onto the structural data in
-// ./planets.js via getBodies(lang).
-
 export const planetsContent = {
   en: {
     sun: {

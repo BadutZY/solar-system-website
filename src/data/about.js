@@ -1,8 +1,3 @@
-// Content for the About page: a list of verified space fun facts and a
-// short list of space-themed films with their official YouTube trailers.
-// Kept as data, separate from the About.jsx component, so it is easy to
-// review, correct, or extend independently of the page's layout code.
-
 export const funFacts = {
   en: [
     'A day on Venus (one full rotation) lasts about 243 Earth days, which is longer than Venus\u2019 own year of about 225 Earth days.',
@@ -42,7 +37,6 @@ export const funFacts = {
   ],
 };
 
-// videoId refers to the official YouTube trailer for each film.
 const MOVIE_BASE = [
   { id: 'interstellar', year: '2014', videoId: 'zSWdZVtXT7E' },
   { id: 'project-hail-mary', year: '2026', videoId: 'yUsJQeNUaD4' },

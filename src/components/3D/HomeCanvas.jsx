@@ -7,45 +7,17 @@ import BeltParticles from './BeltParticles.jsx';
 import { getBodies } from '../../data/planets.js';
 
 const bodies = getBodies('en');
-
 const SPACING = 15;
-// How far (world units) to push the look-at target away from the planet so
-// the planet itself renders off-center, inside whichever half of the screen
-// is NOT covered by the text panel for that section. Desktop only — on
-// mobile the panel lives below the fold (see home.css), so the planet stays
-// horizontally centered instead.
 const FRAME_OFFSET = 2.6;
-
-// Mobile panel sits across the bottom ~55-60% of the screen, so the planet
-// needs to sit higher in frame to stay clear of it. Shifting the look-at
-// target down in world space pushes the rendered subject up on screen.
 const MOBILE_VERTICAL_LIFT = 2.4;
-// Camera pulls back further on mobile so the planet reads comfortably
-// inside the narrower open strip above the panel.
 const MOBILE_CAM_OFFSET = new THREE.Vector3(0, 2.1, 10.5);
 const DESKTOP_CAM_OFFSET = new THREE.Vector3(2.2, 1.4, 7.5);
-
-// Same breakpoint as the CSS (`@media (max-width: 860px)` in home.css).
-// IMPORTANT: this is intentionally read from the actual <canvas> render
-// size (via useThree, below) instead of `window.matchMedia` / a React
-// prop computed outside the canvas. On real mobile devices the browser
-// chrome (address bar show/hide, dynamic viewport units, resize timing)
-// can make `window.innerWidth`/matchMedia briefly disagree with the
-// canvas's real size, which used to leave the camera on the "desktop"
-// framing path — pushing the planet off to the side — even though the
-// CSS layout had already switched to the mobile, bottom-panel layout.
-// Reading the canvas's own size guarantees the 3D framing always agrees
-// with what is actually on screen.
 const MOBILE_BREAKPOINT = 860;
 
 function planetWorldPositions() {
   return bodies.map((b, i) => new THREE.Vector3(i * SPACING, Math.sin(i * 1.3) * 1.2, Math.cos(i * 0.7) * 3));
 }
 
-// Panel sits on the LEFT for even index, RIGHT for odd index (see PlanetSection).
-// To reveal the planet on the opposite, empty half of the screen we aim the
-// camera at a point offset to the SAME side as the panel — that pushes the
-// actual subject visually toward the opposite, open half.
 function sideSignForIndex(i) {
   return i % 2 === 0 ? -1 : 1;
 }
@@ -56,8 +28,6 @@ function CameraRig({ progressRef }) {
   const rightVec = useRef(new THREE.Vector3(1, 0, 0));
 
   useFrame(({ camera, size }) => {
-    // Derived every frame from the canvas's real, current size — always
-    // in lockstep with the CSS breakpoint that decides the panel layout.
     const isMobile = size.width <= MOBILE_BREAKPOINT;
     const n = bodies.length;
     const t = THREE.MathUtils.clamp(progressRef.current.value, 0, 1) * (n - 1);
@@ -72,17 +42,11 @@ function CameraRig({ progressRef }) {
     const camPos = new THREE.Vector3().lerpVectors(a, b, frac).add(camOffset);
     camera.position.lerp(camPos, 0.06);
 
-    // Screen-space "right" vector for the camera's current orientation,
-    // derived from its forward direction so the offset stays correct as the
-    // camera path curves.
     const forward = new THREE.Vector3().subVectors(focus, camera.position).normalize();
     rightVec.current.crossVectors(forward, camera.up).normalize();
 
     let aimPoint;
     if (isMobile) {
-      // No left/right push — the panel is full-width and docked to the
-      // bottom, so the planet just needs to stay centered and lifted into
-      // the open strip above it.
       aimPoint = focus.clone().add(new THREE.Vector3(0, -MOBILE_VERTICAL_LIFT, 0));
     } else {
       const nearestIndex = Math.round(t);
@@ -124,13 +88,6 @@ function PlanetTrail() {
   );
 }
 
-// Extra safety net for real mobile browsers: `ResizeObserver` (which r3f
-// uses internally to size the canvas) can occasionally miss the resize
-// that happens when the address bar animates in/out, or fire once with a
-// stale value right at page load before the browser chrome has settled.
-// `visualViewport` is the one API mobile browsers keep accurate through
-// all of that, so we mirror its width/height into the canvas directly as
-// a fallback whenever it disagrees with what r3f currently has.
 function ForceViewportSync() {
   const { size, setSize, gl } = useThree();
 
